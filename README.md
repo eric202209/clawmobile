@@ -1,42 +1,80 @@
-# OpenClaw Mobile Assistant
+# 🦞 ClawMobile
 
-A privacy-first Android chat app that connects to your self-hosted OpenClaw server.
+A native Android client for [OpenClaw](https://github.com/openclaw/openclaw) — chat with your self-hosted AI agent from your phone.
+
+[![Release](https://img.shields.io/github/v/release/henrycode03/clawmobile?style=flat-square&label=release&color=555555)](https://github.com/henrycode03/clawmobile/releases)
+[![Downloads](https://img.shields.io/github/downloads/henrycode03/clawmobile/total?style=flat-square&label=downloads&color=4c9be8)](https://github.com/henrycode03/clawmobile/releases)
+[![License](https://img.shields.io/github/license/henrycode03/clawmobile?style=flat-square&color=blue)](https://github.com/henrycode03/clawmobile/blob/main/LICENSE)
+[![Platform](https://img.shields.io/badge/platform-Android%207.0+-00A884?style=flat-square)](https://developer.android.com/about/versions/nougat)
+
+---
+
+## Features
+
+- **Real-time streaming** — token-by-token typewriter response via WebSocket
+- **Ed25519 authentication** — full device pairing handshake with OpenClaw Gateway 2.13+
+- **Agent selector** — switch between Main / Engineer / QA agents on the fly
+- **Markdown rendering** — bold, italic, inline code, code blocks, headings, lists
+- **Chat history** — local Room database, sortable, per-session
+- **Auto-reconnect** — recovers from network drops automatically
+- **Voice input** — Android Speech-to-Text integration
+- **Dark theme** — WhatsApp-style dark UI
 
 ## Tech Stack
 
-- Kotlin + Views (XML layouts)
-- Room Database (local message storage)
-- Retrofit (HTTP API)
-- Material Design 3
+| Layer | Technology |
+|---|---|
+| Language | Kotlin |
+| UI | XML Views + ViewBinding |
+| Architecture | MVVM (ViewModel + LiveData + Repository) |
+| Local storage | Room Database |
+| Networking | OkHttp WebSocket + Retrofit |
+| Auth | Ed25519 via BouncyCastle |
+| Build | Gradle KTS + KSP |
 
 ## Project Structure
 
 ```
 app/src/main/java/com/user/
+├── data/               # Room entities, DAO, database, prefs
+├── repository/         # ChatRepository — single source of truth
+├── viewmodel/          # ChatViewModel, SessionViewModel
+├── service/            # GatewayClient, Ed25519Manager, OpenClawService
+├── ui/                 # ChatAdapter, SessionAdapter, MarkdownRenderer
 ├── MainActivity.kt
-├── data/
-│   ├── ChatMessage.kt
-│   ├── ChatDao.kt
-│   └── ChatDatabase.kt
-├── ui/
-│   └── ChatAdapter.kt
-└── service/
-    └── OpenClawService.kt
+├── SessionsActivity.kt
+└── SettingsActivity.kt
 ```
 
 ## Quick Start
 
 ### Prerequisites
+
 - Android Studio Hedgehog (2023.1.1) or newer
 - JDK 17+
 - Android SDK API 24+ (Android 7.0+)
+- OpenClaw running on your local machine or server
 
-### Setup
+### Connect to OpenClaw
 
-1. Clone or create a new project with package `com.user`, minimum SDK 24
-2. Copy all files from `code.txt` into the matching paths
-3. In `OpenClawService.kt`, replace `YOUR_OPENCLAW_IP` with your server's local IP
-4. Sync Gradle, then build and run
+**Option A — SSH tunnel (emulator or phone on different network)**
+```powershell
+# Run on your laptop, keep it open
+ssh -N -L 18789:localhost:18789 -o ServerAliveInterval=30 USER@YOUR_SERVER_IP
+```
+Then set Server URL in the app to `http://10.0.2.2:18789` (emulator) or `http://localhost:18789` (phone on same network).
+
+**Option B — Same WiFi**
+
+Set Server URL to your server's local IP, e.g. `http://192.168.1.50:18789`.
+
+### Get Your Gateway Token
+
+Run on your OpenClaw server:
+```bash
+cat ~/.openclaw/openclaw.json
+# Copy the value of gateway.auth.token
+```
 
 ### Build & Run
 
@@ -47,17 +85,43 @@ app/src/main/java/com/user/
 
 Or use **Run → Run 'app'** in Android Studio with a connected device.
 
+### First Launch
+
+1. App opens Settings automatically if no token is set
+2. Enter Server URL and Gateway Token → Save
+3. First connection shows **Device Pairing Required** dialog
+4. Run on your server:
+```bash
+openclaw gateway call device.pair.list --json
+openclaw gateway call device.pair.approve --params '{"requestId":"<id>"}' --json
+```
+5. Restart the app → `● Connected`
+
 ## Troubleshooting
 
 | Issue | Fix |
 |---|---|
-| "Cannot resolve symbol" | File → Invalidate Caches / Restart |
-| KSP build errors | Ensure KSP version matches Kotlin version |
-| HTTP connection fails | Check `usesCleartextTraffic="true"` in manifest; confirm device and server are on the same network |
-| App won't install | Enable USB debugging; try `adb kill-server && adb start-server` |
+| `● Handshaking…` stuck | Check SSH tunnel is running; verify token |
+| Pairing required on every launch | Use a real device instead of emulator (emulator clears data on restart) |
+| `Software caused connection abort` | Add `-o ServerAliveInterval=30` to your SSH tunnel command |
+| KSP build errors | Ensure KSP version prefix matches Kotlin version in `libs.versions.toml` |
+| `Cannot resolve symbol` | File → Invalidate Caches / Restart |
+
+## Related Projects
+
+| Project | Description |
+|---|---|
+| [OpenClaw](https://github.com/openclaw/openclaw) | AI Agent framework |
+| [ClawApp](https://github.com/qingchencloud/clawapp) | H5 + PWA mobile client |
+| [ClawBridge](https://github.com/dreamwing/clawbridge) | OpenClaw mobile dashboard |
+| [ClawPanel](https://github.com/qingchencloud/clawpanel) | Desktop management panel |
 
 ## Privacy
 
-- No cloud data collection — all messages stored locally via Room
-- No analytics, no Firebase, no third-party tracking
+- All messages stored locally on device via Room
+- No analytics, no cloud sync, no third-party SDKs
 - Only outbound connection is to your own OpenClaw server
+
+## License
+
+MIT

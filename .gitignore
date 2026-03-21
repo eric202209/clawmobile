@@ -105,6 +105,10 @@ lint/tmp/
 server/.env
 gradle.properties
 
+# Key
+*.jks
+*.keystore
+
 # Privacy: Don't store API keys or credentials
 # Add your sensitive config files here if needed
 # openclaw_config.json
