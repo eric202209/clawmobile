@@ -45,6 +45,7 @@ class MainActivity : AppCompatActivity() {
         if (PrefsManager(this).gatewayToken.isEmpty()) {
             Toast.makeText(this, "Please enter your Gateway Token", Toast.LENGTH_LONG).show()
             startActivity(Intent(this, SettingsActivity::class.java))
+            finish()
             return
         }
 
@@ -58,15 +59,11 @@ class MainActivity : AppCompatActivity() {
             title = sessionTitle ?: "Chat"
             supportActionBar?.setDisplayHomeAsUpEnabled(true)
             viewModel.loadSession(sessionId, sessionTitle)
-            // When you open Chat History mode, it does not initiate new connections
         } else {
             viewModel.startNewSession()
-            requestNotificationPermission()
+            requestNotificationPermission()  // ← 只在新對話時呼叫一次
             viewModel.startService(this)
         }
-
-        requestNotificationPermission()
-        viewModel.startService(this)
     }
 
     // ── Setup ─────────────────────────────────────────────────
@@ -84,12 +81,10 @@ class MainActivity : AppCompatActivity() {
         viewModel.status.observe(this) { status ->
             when {
                 status.startsWith("✕") || status.startsWith("○") -> {
-                    // Display only when there is a disconnection or error.
                     binding.statusText.text = status
                     binding.statusText.visibility = View.VISIBLE
                 }
                 status.startsWith("●") -> {
-                    // Connection successful → Hide in 1.5 seconds
                     binding.statusText.text = status
                     binding.statusText.visibility = View.VISIBLE
                     binding.statusText.postDelayed({
@@ -97,7 +92,6 @@ class MainActivity : AppCompatActivity() {
                     }, 1500)
                 }
                 else -> {
-                    // Connecting / Handshaking → Displayed but not persistent.
                     binding.statusText.text = status
                     binding.statusText.visibility = View.VISIBLE
                 }
@@ -108,24 +102,12 @@ class MainActivity : AppCompatActivity() {
             if (messages.isNotEmpty())
                 binding.recyclerView.scrollToPosition(messages.size - 1)
         }
-        viewModel.agents.observe(this)          { setupAgentSpinner(it) }
-        viewModel.isSending.observe(this)        { binding.sendButton.isEnabled = !it }
-        viewModel.showTyping.observe(this)       { show ->
+        viewModel.agents.observe(this)         { setupAgentSpinner(it) }
+        viewModel.isSending.observe(this)      { binding.sendButton.isEnabled = !it }
+        viewModel.showTyping.observe(this)     { show ->
             binding.typingIndicator.visibility = if (show) View.VISIBLE else View.GONE
         }
-        viewModel.pairingRequired.observe(this)  { showPairingDialog(it) }
-
-        binding.statusText.visibility = View.GONE
-
-        viewModel.status.observe(this) { status ->
-            if (status.isNullOrEmpty()) {
-                binding.statusText.visibility = View.GONE
-            } else {
-                binding.statusText.text = status
-                binding.statusText.visibility = View.VISIBLE
-            }
-        }
-
+        viewModel.pairingRequired.observe(this) { showPairingDialog(it) }
         viewModel.toast.observe(this) { message ->
             message ?: return@observe
             Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
