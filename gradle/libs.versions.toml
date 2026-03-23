@@ -1,7 +1,7 @@
 [versions]
-kotlin = "1.9.22"
-ksp = "1.9.22-1.0.17"
-agp = "8.5.0"
+kotlin = "2.0.21"
+ksp = "2.0.21-1.0.25"
+agp = "8.6.0"
 
 room = "2.6.1"
 retrofit = "2.9.0"
@@ -16,6 +16,7 @@ coordinatorlayout = "1.2.0"
 bouncycastle = "1.78.1"
 activity = "1.8.1"
 livedata = "2.6.2"
+remote-creation-compose = "1.0.0-alpha06"
 
 [libraries]
 core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core-ktx" }
@@ -45,6 +46,7 @@ espresso = { group = "androidx.test.espresso", name = "espresso-core", version =
 
 lifecycle-livedata = { group = "androidx.lifecycle", name = "lifecycle-livedata-ktx", version.ref = "livedata" }
 activity-ktx = { group = "androidx.activity", name = "activity-ktx", version.ref = "activity" }
+androidx-remote-creation-compose = { group = "androidx.compose.remote", name = "remote-creation-compose", version.ref = "remote-creation-compose" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

@@ -45,7 +45,7 @@ class GatewayClient(
 
     private var webSocket: WebSocket? = null
     private var state = State.DISCONNECTED
-    private var shouldReconnect = true
+    var shouldReconnect: Boolean = true
     private var reconnectAttempts = 0
 
     // Default sessionKey — updated when user picks an agent
@@ -62,6 +62,9 @@ class GatewayClient(
 
     private val _events = MutableSharedFlow<GatewayEvent>(extraBufferCapacity = 128)
     val events: SharedFlow<GatewayEvent> = _events
+
+    // Callback for successful pairing
+    var onPairingComplete: ((String) -> Unit)? = null
 
     enum class State { DISCONNECTED, CONNECTING, HANDSHAKING, READY }
 
@@ -88,16 +91,22 @@ class GatewayClient(
     fun switchAgent(agentId: String) {
         sessionKey = "agent:$agentId:main"
         streamBuffer.clear()
-        // Automatically trigger agent self-introduction
-        // sendMessage("Briefly introduce yourself based on your role")
     }
 
-    fun sendMessage(message: String) {
+    fun sendMessage(text: String, imageBase64: String? = null, imageMimeType: String = "image/jpeg") {
         if (state != State.READY || sessionKey.isEmpty()) {
             _events.tryEmit(GatewayEvent.Error("Not connected"))
             return
         }
         streamBuffer.clear()
+
+        // Build message string - backend expects a string, not JSON array
+        // If imageBase64 is provided, we wrap it in the [image_base64:...] format for the proxy
+        val message = if (imageBase64 != null) {
+            "${text.ifBlank { "Please analyze this image." }} [image_base64:$imageMimeType:$imageBase64]"
+        } else {
+            text
+        }
 
         val req = JSONObject().apply {
             put("type",   "req")
@@ -150,7 +159,7 @@ class GatewayClient(
             state = State.HANDSHAKING
             _events.tryEmit(GatewayEvent.HandshakeStarted)
 
-            // 500ms fallback if no challenge arrives
+            // 2s fallback if no challenge arrives
             val handler = android.os.Handler(android.os.Looper.getMainLooper())
             val runnable = Runnable {
                 if (state == State.HANDSHAKING) {
@@ -184,7 +193,7 @@ class GatewayClient(
         override fun onClosed(ws: WebSocket, code: Int, reason: String) {
             state = State.DISCONNECTED
             _events.tryEmit(GatewayEvent.Disconnected)
-            if (code != 1000) scheduleReconnect() // 1000 = Normal shutdown, no reconnection
+            if (code != 1000) scheduleReconnect()
         }
     }
 
@@ -211,12 +220,18 @@ class GatewayClient(
                 if (!msg.optBoolean("ok", false)) {
                     val errCode = msg.optJSONObject("error")?.optString("code") ?: ""
                     val errMsg  = msg.optJSONObject("error")?.optString("message") ?: "Handshake failed"
-                    when {
-                        errCode.contains("UNPAIRED") || errCode.contains("NOT_PAIRED") ||
-                                errMsg.lowercase().contains("pair") ->
-                            _events.tryEmit(GatewayEvent.PairingRequired(ed25519.deviceId))
-                        else ->
-                            _events.tryEmit(GatewayEvent.Error("Handshake failed: $errMsg"))
+                    
+                    // Fixed: More specific pairing check to avoid false positives with "repair"
+                    val isPairingError = errCode == "UNPAIRED" || 
+                                       errCode == "NOT_PAIRED" || 
+                                       errCode == "PAIRING_REQUIRED" ||
+                                       errMsg.lowercase().contains("pairing required") ||
+                                       errMsg.lowercase().contains("not paired")
+
+                    if (isPairingError) {
+                        _events.tryEmit(GatewayEvent.PairingRequired(ed25519.deviceId))
+                    } else {
+                        _events.tryEmit(GatewayEvent.Error("Handshake failed: $errMsg"))
                     }
                     state = State.DISCONNECTED
                     return
@@ -227,7 +242,6 @@ class GatewayClient(
                 val snapshot = payload?.optJSONObject("snapshot")
                 val defaults = snapshot?.optJSONObject("sessionDefaults")
 
-                // Build agent list from snapshot.agents
                 val agentsJson = snapshot?.optJSONObject("health")?.optJSONArray("agents")
                 val agents = mutableListOf<AgentInfo>()
                 if (agentsJson != null) {
@@ -240,13 +254,11 @@ class GatewayClient(
                     }
                 }
 
-                // Fallback if no agents in snapshot
                 if (agents.isEmpty()) {
                     agents.add(AgentInfo("main", "Main"))
                 }
                 availableAgents = agents
 
-                // Set default sessionKey
                 val mainKey = defaults?.optString("mainSessionKey")
                 sessionKey = if (!mainKey.isNullOrEmpty()) {
                     mainKey
@@ -257,6 +269,7 @@ class GatewayClient(
 
                 state = State.READY
                 resetReconnect()
+                onPairingComplete?.invoke(ed25519.deviceId)
                 _events.tryEmit(GatewayEvent.Ready(agents))
             }
 
@@ -278,7 +291,6 @@ class GatewayClient(
                     }
                     "lifecycle" -> {
                         if (data?.optString("phase") == "end") {
-                            val runId = payload.optString("runId")
                             if (runId != currentRunId) return
                             val full = streamBuffer.toString().also { streamBuffer.clear() }
                             currentRunId = ""

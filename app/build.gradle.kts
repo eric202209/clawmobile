@@ -6,12 +6,12 @@ plugins {
 
 android {
     namespace = "com.user"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.user"
-        minSdk = 26
-        targetSdk = 34
+        minSdk = 29
+        targetSdk = 35
         versionCode = 3
         versionName = "1.2.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -32,6 +32,12 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
+    packaging {
+        resources {
+            excludes += "META-INF/versions/**"
+        }
+    }
+
     kotlinOptions { jvmTarget = "17" }
     buildFeatures { viewBinding = true }
 }
@@ -45,6 +51,7 @@ dependencies {
 
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
+    implementation(libs.androidx.remote.creation.compose)
     ksp(libs.room.compiler)
 
     implementation(libs.retrofit)
@@ -60,7 +67,6 @@ dependencies {
     implementation(libs.lifecycle.livedata)
     implementation(libs.activity.ktx)
 
-    // implementation(libs.bouncycastle)
     implementation("org.bouncycastle:bcprov-jdk18on:1.78.1")
 
     testImplementation(libs.junit)

@@ -4,4 +4,9 @@
         <item name="android:textColor">@color/ai_bubble_text</item>
         <item name="android:background">@color/ai_bubble</item>
     </style>
+
+    <style name="RoundedCorners">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">12dp</item>
+    </style>
 </resources>

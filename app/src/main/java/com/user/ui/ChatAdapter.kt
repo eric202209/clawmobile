@@ -45,8 +45,31 @@ class ChatAdapter : ListAdapter<ChatMessage, ChatAdapter.MessageViewHolder>(Diff
             if (message.isUser) {
                 binding.userRow.visibility = View.VISIBLE
                 binding.aiRow.visibility   = View.GONE
-                binding.userMessageText.text = message.message
                 binding.userTimestampText.text = time
+
+                if (message.imageBase64 != null) {
+                    try {
+                        val bytes  = android.util.Base64.decode(message.imageBase64, android.util.Base64.DEFAULT)
+                        val bitmap = android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                        binding.userMessageImage.setImageBitmap(bitmap)
+                        binding.userMessageImage.visibility = View.VISIBLE
+                        if (message.message != "📷 Image") {
+                            binding.userMessageText.text = message.message
+                            binding.userMessageText.visibility = View.VISIBLE
+                        } else {
+                            binding.userMessageText.visibility = View.GONE
+                        }
+                    } catch (e: Exception) {
+                        binding.userMessageText.text = message.message
+                        binding.userMessageText.visibility = View.VISIBLE
+                        binding.userMessageImage.visibility = View.GONE
+                    }
+                } else {
+                    binding.userMessageText.text = message.message
+                    binding.userMessageText.visibility = View.VISIBLE
+                    binding.userMessageImage.visibility = View.GONE
+                }
+
                 binding.userMessageText.setOnLongClickListener {
                     showActionDialog(binding.root.context, message.message)
                     true

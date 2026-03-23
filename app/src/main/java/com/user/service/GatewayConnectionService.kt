@@ -27,16 +27,36 @@ class GatewayConnectionService : Service() {
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private lateinit var gatewayClient: GatewayClient
+    private lateinit var ed25519: Ed25519Manager
 
     override fun onCreate() {
         super.onCreate()
         val prefs   = PrefsManager(this)
-        val ed25519 = Ed25519Manager(this)
+        ed25519     = Ed25519Manager(this)
         gatewayClient = GatewayClient(prefs.serverUrl, prefs.gatewayToken, ed25519)
         createNotificationChannel()
+
+        // Persist the device ID after successful pairing
+        if (ed25519.isPaired()) {
+            // Device already paired, ensure we have the stored ID
+            prefs.deviceId = ed25519.deviceId
+        }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        // Handle mark_paired action
+        if (intent?.action == "mark_paired") {
+            val deviceId = intent.getStringExtra("deviceId")
+            if (!deviceId.isNullOrEmpty()) {
+                markPaired()
+                // Update notification to reflect connected state
+                updateNotification("● Connected", "Main")
+            }
+            return START_NOT_STICKY
+        }
+
+        val status = intent?.getStringExtra("status")
+        val agent  = intent?.getStringExtra("agent")
         if (intent?.action == ACTION_STOP) {
             stopSelf()
             return START_NOT_STICKY
@@ -50,23 +70,9 @@ class GatewayConnectionService : Service() {
         } else {
             startForeground(NOTIFICATION_ID, buildNotification("○ Connecting…", ""))
         }
-        gatewayClient.connect()
-
-        // Update notification on connection state changes
-        scope.launch {
-            gatewayClient.events.collect { event ->
-                when (event) {
-                    is GatewayEvent.Ready -> {
-                        val agent = gatewayClient.availableAgents.firstOrNull()?.name ?: "Main"
-                        updateNotification("● Connected", agent)
-                    }
-                    is GatewayEvent.Disconnected ->
-                        updateNotification("○ Disconnected", "")
-                    is GatewayEvent.Error ->
-                        updateNotification("✕ Error", "")
-                    else -> {}
-                }
-            }
+        if (status != null) {
+            updateNotification(status, agent ?: "")
+            return START_STICKY
         }
 
         return START_STICKY
@@ -78,6 +84,12 @@ class GatewayConnectionService : Service() {
         super.onDestroy()
         scope.cancel()
         gatewayClient.disconnect()
+    }
+
+    // Called when pairing is successful, persists the device ID
+    fun markPaired() {
+        ed25519.persistDeviceId()
+        PrefsManager(this).deviceId = ed25519.deviceId
     }
 
     // ── Notification ─────────────────────────────────────────

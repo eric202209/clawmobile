@@ -11,7 +11,8 @@ data class ChatMessage(
     val message: String,
     val isUser: Boolean,
     val timestamp: Long = System.currentTimeMillis(),
-    val status: MessageStatus = MessageStatus.SENT
+    val status: MessageStatus = MessageStatus.SENT,
+    val imageBase64: String? = null
 )
 
 enum class MessageStatus {
