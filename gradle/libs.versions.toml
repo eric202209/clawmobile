@@ -1,7 +1,7 @@
 [versions]
 kotlin = "2.0.21"
 ksp = "2.0.21-1.0.25"
-agp = "8.6.0"
+agp = "8.13.2"
 
 room = "2.6.1"
 retrofit = "2.9.0"
