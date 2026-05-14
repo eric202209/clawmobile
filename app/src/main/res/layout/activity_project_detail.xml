@@ -68,7 +68,9 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/space_xs"
                     android:textColor="@color/text_secondary"
-                    android:textSize="13sp"
+                    android:textSize="12sp"
+                    android:maxLines="3"
+                    android:ellipsize="end"
                     android:visibility="gone" />
 
                 <TextView

@@ -151,7 +151,8 @@ class ProjectDetailActivity : AppCompatActivity() {
 
                 val rules = status.projectRules?.takeIf { it.isNotBlank() }
                 if (rules != null) {
-                    binding.projectRulesText.text = "Rules: $rules"
+                    val firstThreeLines = rules.lines().filter { it.isNotBlank() }.take(3).joinToString("\n")
+                    binding.projectRulesText.text = firstThreeLines
                     binding.projectRulesText.visibility = View.VISIBLE
                 } else {
                     binding.projectRulesText.visibility = View.GONE

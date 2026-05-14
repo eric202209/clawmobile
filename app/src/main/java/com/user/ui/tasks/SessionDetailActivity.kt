@@ -11,8 +11,6 @@ import com.user.ClawMobileApplication
 import com.user.R
 import com.user.data.ExecutionFailureSummaryResponse
 import com.user.data.InterventionRequest
-import com.user.data.KnowledgeUsageEntry
-import com.user.data.KnowledgeUsageResponse
 import com.user.data.MobileCheckpointListResponse
 import com.user.data.MobileSessionSummaryResponse
 import com.user.data.RecentActivity
@@ -50,7 +48,7 @@ class SessionDetailActivity : AppCompatActivity() {
     private var currentIntervention: InterventionRequest? = null
     private var isWebSocketOffline = false
     private var latestFailureSummary: ExecutionFailureSummaryResponse? = null
-    private var latestKnowledgeUsage: Map<String, List<KnowledgeUsageEntry>> = emptyMap()
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -199,13 +197,6 @@ class SessionDetailActivity : AppCompatActivity() {
                 binding.replanCard.visibility = View.GONE
             }
 
-            client.getKnowledgeUsage(sessionId).onSuccess { ku ->
-                latestKnowledgeUsage = ku.phases
-                bindKnowledgeUsage(ku.phases)
-            }.onFailure {
-                latestKnowledgeUsage = emptyMap()
-                binding.knowledgeReferencesCard.visibility = View.GONE
-            }
         }
     }
 
@@ -236,7 +227,13 @@ class SessionDetailActivity : AppCompatActivity() {
             ?.let { "Started: $it" }
             ?: "Started time unavailable"
         binding.taskProgressView.text = progress?.let {
-            "Total: ${it.total} • Pending: ${it.pending} • Running: ${it.running} • Done: ${it.done} • Failed: ${it.failed}"
+            buildString {
+                append("${it.total} task${if (it.total != 1) "s" else ""}")
+                if (it.failed > 0) append(" · ${it.failed} failed")
+                if (it.running > 0) append(" · ${it.running} running")
+                if (it.done > 0) append(" · ${it.done} done")
+                if (it.pending > 0) append(" · ${it.pending} pending")
+            }
         } ?: "No task progress available."
 
         latestLogs = summary.recentLogs
@@ -481,32 +478,6 @@ class SessionDetailActivity : AppCompatActivity() {
                 "Errors"
             else -> "Recent Activity"
         }
-    }
-
-    private fun bindKnowledgeUsage(phases: Map<String, List<KnowledgeUsageEntry>>) {
-        if (phases.isEmpty()) {
-            binding.knowledgeReferencesCard.visibility = View.GONE
-            return
-        }
-        val text = phases.entries.joinToString("\n\n") { (phase, entries) ->
-            val header = phase.replaceFirstChar { it.uppercase() }
-            val items = entries.joinToString("\n") { entry ->
-                val injected = if (entry.usedInPrompt) "injected" else "retrieved"
-                val pct = (entry.confidenceMax * 100).toInt()
-                val usage = if (entry.usageCount > 1) " — used ${entry.usageCount}x" else ""
-                val timeRange = when {
-                    entry.firstUsedAt != null && entry.lastUsedAt != null &&
-                        entry.firstUsedAt != entry.lastUsedAt ->
-                        "\n  ${entry.firstUsedAt} to ${entry.lastUsedAt}"
-                    entry.lastUsedAt != null -> "\n  ${entry.lastUsedAt}"
-                    else -> ""
-                }
-                "• ${entry.title} [${entry.knowledgeType}] — $pct% — $injected$usage\n  ${entry.retrievalReason}$timeRange"
-            }
-            "$header\n$items"
-        }
-        binding.knowledgeReferencesView.text = text
-        binding.knowledgeReferencesCard.visibility = View.VISIBLE
     }
 
     private fun bindIntervention(intervention: InterventionRequest?) {
