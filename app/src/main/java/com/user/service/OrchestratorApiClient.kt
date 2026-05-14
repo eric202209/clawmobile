@@ -284,7 +284,7 @@ class OrchestratorApiClient(
             taskId = this.id.toString(),
             title = this.title,
             description = this.description,
-            status = this.status.lowercase(),
+            status = this.status?.lowercase() ?: "unknown",
             projectId = this.projectId.toString(),
             sessionId = this.latestSessionId?.toString(),
             sessionName = this.latestSessionName,

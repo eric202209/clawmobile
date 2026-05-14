@@ -366,14 +366,13 @@ class SessionDetailActivity : AppCompatActivity() {
     }
 
     private fun styleFilterButton(button: com.google.android.material.button.MaterialButton, selected: Boolean) {
-        button.isEnabled = !selected
         if (selected) {
             button.setBackgroundColor(ContextCompat.getColor(this, R.color.primary))
             button.setTextColor(ContextCompat.getColor(this, R.color.white))
             button.strokeWidth = 0
         } else {
             button.setBackgroundColor(ContextCompat.getColor(this, R.color.surface_container_low))
-            button.setTextColor(ContextCompat.getColor(this, R.color.text_primary))
+            button.setTextColor(ContextCompat.getColor(this, R.color.text_secondary))
             button.strokeWidth = 1
             button.strokeColor = android.content.res.ColorStateList.valueOf(
                 ContextCompat.getColor(this, R.color.outline_subtle)
@@ -443,11 +442,12 @@ class SessionDetailActivity : AppCompatActivity() {
                 }
         }
 
+        val matchCount = filteredLogs.size
         binding.logTimelineHint.text = when (currentLogFilter) {
-            LogFilter.ALL -> "Newest first, grouped by run phase."
-            LogFilter.ERRORS -> "Only the newest blockers and failures."
-            LogFilter.PHASES -> "Planning, execution, debugging, and completion grouped together."
-            LogFilter.CHECKPOINTS -> "Resume and checkpoint activity only."
+            LogFilter.ALL -> if (matchCount > 0) "Newest first, grouped by phase. $matchCount entries." else "No recent logs yet."
+            LogFilter.ERRORS -> if (matchCount > 0) "$matchCount error/failure entries." else "No errors or failures in recent logs."
+            LogFilter.PHASES -> if (matchCount > 0) "$matchCount phase entries (planning, execution, debugging)." else "No phase logs in recent logs."
+            LogFilter.CHECKPOINTS -> if (matchCount > 0) "$matchCount checkpoint/resume entries." else "No checkpoint activity in recent logs."
         }
         binding.recentLogsView.text = OutputHighlighter.render(this, rendered)
     }

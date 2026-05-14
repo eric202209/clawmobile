@@ -49,14 +49,21 @@ class ProjectTaskAdapter(
                 false
             }
 
-            binding.taskStatus.text = when (task.status.lowercase()) {
+            val effectiveStatus = when {
+                task.status == "unknown" && task.hasActiveSession -> "running"
+                task.status == "unknown" -> task.sessionStatus?.lowercase() ?: "pending"
+                else -> task.status.lowercase()
+            }
+            binding.taskStatus.text = when (effectiveStatus) {
                 "failed" -> "Needs attention"
                 "running", "executing", "in_progress" -> "Running"
                 "pending" -> "Waiting"
                 "done", "completed", "success" -> "Done"
                 "approved" -> "Approved"
                 "timeout" -> "Timed out"
-                else -> task.status.replace('_', ' ').replaceFirstChar { it.uppercase() }
+                "cancelled", "canceled" -> "Cancelled"
+                "rejected" -> "Rejected"
+                else -> effectiveStatus.replace('_', ' ').replaceFirstChar { it.uppercase() }
             }
 
             val progression = when {
