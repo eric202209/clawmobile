@@ -285,6 +285,47 @@
 
                 </com.google.android.material.textfield.TextInputLayout>
 
+                <!-- Change set summary row (Phase 9H) -->
+                <LinearLayout
+                    android:id="@+id/changeSetSummaryRow"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/space_md"
+                    android:orientation="horizontal"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:id="@+id/changeSetAdded"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:textColor="@color/status_running"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/changeSetModified"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:textColor="@color/text_primary"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/changeSetDeleted"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:textColor="@color/status_failed"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
+
+                </LinearLayout>
+
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -310,6 +351,16 @@
 
                 </LinearLayout>
 
+                <!-- Reject & Restore button (Phase 9H) -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/rejectChangeSetButton"
+                    style="@style/Widget.OpenClaw.Button.Danger"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/touch_target_min"
+                    android:layout_marginTop="@dimen/space_sm"
+                    android:text="Reject &amp; Restore"
+                    android:visibility="gone" />
+
                 <!-- Read-only resolved badge -->
                 <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/workspaceResolvedBadge"
@@ -320,6 +371,16 @@
                     android:textSize="14sp"
                     android:textStyle="bold"
                     android:textColor="@color/md3_secondary" />
+
+                <!-- Promotion note (Phase 9H) -->
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/promotionNoteText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_sm"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="13sp"
+                    android:visibility="gone" />
 
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>

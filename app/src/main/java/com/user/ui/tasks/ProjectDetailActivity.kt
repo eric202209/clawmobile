@@ -149,6 +149,14 @@ class ProjectDetailActivity : AppCompatActivity() {
                     binding.projectDescription.visibility = View.GONE
                 }
 
+                val rules = status.projectRules?.takeIf { it.isNotBlank() }
+                if (rules != null) {
+                    binding.projectRulesText.text = "Rules: $rules"
+                    binding.projectRulesText.visibility = View.VISIBLE
+                } else {
+                    binding.projectRulesText.visibility = View.GONE
+                }
+
                 val activeSessionSummary = if (status.sessions.isEmpty()) {
                     null
                 } else {
@@ -177,6 +185,18 @@ class ProjectDetailActivity : AppCompatActivity() {
             }
 
             client.getProjectTree(projectId).onSuccess { tree ->
+                val baseline = tree.baseline
+                if (baseline != null) {
+                    binding.baselineSummaryText.text = if (baseline.exists) {
+                        "Baseline: ${baseline.fileCount} files from ${baseline.promotedTaskCount} promoted task(s)"
+                    } else {
+                        "No canonical baseline yet"
+                    }
+                    binding.baselineSummaryText.visibility = View.VISIBLE
+                } else {
+                    binding.baselineSummaryText.visibility = View.GONE
+                }
+
                 when {
                     !tree.exists -> {
                         binding.projectTreeSummary.text = "Project workspace has not been created yet."
@@ -203,6 +223,7 @@ class ProjectDetailActivity : AppCompatActivity() {
                 }
             }.onFailure { error ->
                 binding.filesCard.visibility = View.VISIBLE
+                binding.baselineSummaryText.visibility = View.GONE
                 binding.projectTreeSummary.text = error.message ?: "Unable to load file tree."
                 binding.projectTreeView.visibility = View.GONE
             }

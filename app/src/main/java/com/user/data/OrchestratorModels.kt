@@ -127,6 +127,14 @@ data class OrchestTaskResponse(
     val latestSessionStatus: String? = null,
     @SerializedName("has_active_session")
     val hasActiveSession: Boolean = false,
+    @SerializedName("is_live_attempt")
+    val isLiveAttempt: Boolean = false,
+    @SerializedName("workspace_status")
+    val workspaceStatus: String? = null,
+    @SerializedName("promotion_note")
+    val promotionNote: String? = null,
+    @SerializedName("promoted_at")
+    val promotedAt: String? = null,
 )
 
 /**
@@ -142,11 +150,15 @@ data class OrchestTask(
     val sessionName: String? = null,
     val sessionStatus: String? = null,
     val hasActiveSession: Boolean = false,
+    val isLiveAttempt: Boolean = false,
     val createdAt: String,
     val updatedAt: String,
     val priority: Int = 0,
     val sequenceIndex: Int? = null,
     val sequenceTotal: Int? = null,
+    val workspaceStatus: String? = null,
+    val promotionNote: String? = null,
+    val promotedAt: String? = null,
 )
 
 /**
@@ -178,6 +190,8 @@ data class ProjectStatusResponse(
     @SerializedName("project_name")
     val projectName: String = "",
     val description: String? = null,
+    @SerializedName("project_rules")
+    val projectRules: String? = null,
     @SerializedName("active_sessions")
     val activeSessions: Int = 0,
     @SerializedName("recent_sessions")
@@ -214,6 +228,25 @@ data class MobileSessionsListResponse(
     val sessions: List<MobileSessionListItem> = emptyList()
 )
 
+data class ProjectBaselineOverview(
+    val exists: Boolean = false,
+    val path: String? = null,
+    @SerializedName("file_count")
+    val fileCount: Int = 0,
+    @SerializedName("promoted_task_count")
+    val promotedTaskCount: Int = 0,
+)
+
+data class ProjectTaskWorkspaceSummary(
+    @SerializedName("task_id")
+    val taskId: Int = 0,
+    val title: String = "",
+    @SerializedName("task_subfolder")
+    val taskSubfolder: String = "",
+    @SerializedName("workspace_status")
+    val workspaceStatus: String? = null,
+)
+
 data class ProjectTreeResponse(
     @SerializedName("project_id")
     val projectId: String = "",
@@ -225,7 +258,60 @@ data class ProjectTreeResponse(
     val treeLines: List<String> = emptyList(),
     @SerializedName("total_entries_shown")
     val totalEntriesShown: Int = 0,
-    val truncated: Boolean = false
+    val truncated: Boolean = false,
+    val baseline: ProjectBaselineOverview? = null,
+    @SerializedName("task_workspaces")
+    val taskWorkspaces: List<ProjectTaskWorkspaceSummary> = emptyList(),
+)
+
+data class ReviewDecision(
+    @SerializedName("held_for_review")
+    val heldForReview: Boolean = false,
+    val policy: String? = null,
+    val reason: String? = null,
+    @SerializedName("changed_count")
+    val changedCount: Int = 0,
+    @SerializedName("warning_flags")
+    val warningFlags: List<String> = emptyList(),
+)
+
+data class TaskChangeSetPayload(
+    @SerializedName("schema")
+    val schema: String? = null,
+    @SerializedName("task_id")
+    val taskId: Int? = null,
+    @SerializedName("session_id")
+    val sessionId: Int? = null,
+    @SerializedName("task_execution_id")
+    val taskExecutionId: Int? = null,
+    val added: List<String> = emptyList(),
+    val modified: List<String> = emptyList(),
+    val deleted: List<String> = emptyList(),
+    @SerializedName("changed_count")
+    val changedCount: Int = 0,
+    @SerializedName("added_count")
+    val addedCount: Int = 0,
+    @SerializedName("modified_count")
+    val modifiedCount: Int = 0,
+    @SerializedName("deleted_count")
+    val deletedCount: Int = 0,
+    @SerializedName("warning_flags")
+    val warningFlags: List<String> = emptyList(),
+    @SerializedName("verification_status")
+    val verificationStatus: String? = null,
+)
+
+data class TaskChangeSetResponse(
+    @SerializedName("task_id")
+    val taskId: Int = 0,
+    @SerializedName("task_execution_id")
+    val taskExecutionId: Int? = null,
+    @SerializedName("change_set")
+    val changeSet: TaskChangeSetPayload? = null,
+    @SerializedName("review_decision")
+    val reviewDecision: ReviewDecision? = null,
+    @SerializedName("recorded_at")
+    val recordedAt: String? = null,
 )
 
 data class MobileSessionSummaryResponse(
@@ -297,8 +383,14 @@ data class MobileTaskDetailResponse(
     val sessionName: String? = null,
     @SerializedName("has_active_session")
     val hasActiveSession: Boolean = false,
+    @SerializedName("is_live_attempt")
+    val isLiveAttempt: Boolean = false,
     @SerializedName("workspace_status")
-    val workspaceStatus: String? = null
+    val workspaceStatus: String? = null,
+    @SerializedName("promotion_note")
+    val promotionNote: String? = null,
+    @SerializedName("promoted_at")
+    val promotedAt: String? = null,
 )
 
 data class InterventionRequest(

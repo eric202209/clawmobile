@@ -9,7 +9,9 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.user.ClawMobileApplication
 import com.user.R
+import com.user.data.MobileTaskDetailResponse
 import com.user.data.Task
+import com.user.data.TaskChangeSetResponse
 import com.user.data.TaskStatus
 import com.user.databinding.ActivityTaskDetailBinding
 import com.user.ui.FailureSummary
@@ -38,6 +40,8 @@ class TaskDetailActivity : AppCompatActivity() {
     private var recoveryReason: String? = null
     private var recoverySessionId: String? = null
     private var workspaceStatus: String? = null
+    private var currentDetail: MobileTaskDetailResponse? = null
+    private var latestChangeSet: TaskChangeSetResponse? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -113,37 +117,105 @@ class TaskDetailActivity : AppCompatActivity() {
         val client = orchestratorClient ?: return
         lifecycleScope.launch {
             client.getTaskDetail(taskId).onSuccess { detail ->
+                currentDetail = detail
                 workspaceStatus = detail.workspaceStatus
                 updateWorkspaceReviewCard()
             }
+            client.getLatestTaskChangeSet(taskId).onSuccess { changeSet ->
+                latestChangeSet = changeSet
+                updateChangeSetSummary(changeSet)
+                updateWorkspaceReviewCard()
+            }.onFailure {
+                // No change set recorded yet — normal for older tasks
+            }
         }
+    }
+
+    private fun updateChangeSetSummary(changeSet: TaskChangeSetResponse) {
+        val cs = changeSet.changeSet
+        if (cs == null || cs.changedCount == 0) {
+            binding.changeSetSummaryRow.visibility = View.GONE
+            return
+        }
+        binding.changeSetAdded.text = "+${cs.addedCount} added"
+        binding.changeSetModified.text = "~${cs.modifiedCount} modified"
+        binding.changeSetDeleted.text = "-${cs.deletedCount} deleted"
+        binding.changeSetSummaryRow.visibility = View.VISIBLE
     }
 
     private fun updateWorkspaceReviewCard() {
         val task = currentTask ?: return
         val isDone = task.status == TaskStatus.COMPLETED
+        val hasChangeSet = latestChangeSet?.changeSet?.let { it.changedCount > 0 } == true
+        val pendingExecutionId = latestChangeSet?.taskExecutionId
+
         when {
-            !isDone -> binding.workspaceReviewCard.visibility = View.GONE
-            workspaceStatus == null -> {
+            !isDone -> {
+                binding.workspaceReviewCard.visibility = View.GONE
+                binding.rejectChangeSetButton.visibility = View.GONE
+            }
+            workspaceStatus == null || workspaceStatus == "ready" -> {
                 binding.workspaceReviewCard.visibility = View.VISIBLE
                 binding.reviewNoteLayout.visibility = View.VISIBLE
                 binding.promoteButton.visibility = View.VISIBLE
                 binding.requestChangesButton.visibility = View.VISIBLE
                 binding.workspaceResolvedBadge.visibility = View.GONE
+                binding.promotionNoteText.visibility = View.GONE
+                binding.rejectChangeSetButton.visibility =
+                    if (hasChangeSet && pendingExecutionId != null) View.VISIBLE else View.GONE
                 binding.promoteButton.setOnClickListener { submitReview("promote") }
                 binding.requestChangesButton.setOnClickListener { submitReview("request_changes") }
+                if (hasChangeSet && pendingExecutionId != null) {
+                    binding.rejectChangeSetButton.setOnClickListener {
+                        confirmRejectChangeSet(task.taskId, pendingExecutionId)
+                    }
+                }
             }
             else -> {
                 binding.workspaceReviewCard.visibility = View.VISIBLE
                 binding.reviewNoteLayout.visibility = View.GONE
                 binding.promoteButton.visibility = View.GONE
                 binding.requestChangesButton.visibility = View.GONE
+                binding.rejectChangeSetButton.visibility = View.GONE
                 binding.workspaceResolvedBadge.visibility = View.VISIBLE
                 binding.workspaceResolvedBadge.text = when (workspaceStatus) {
                     "promoted" -> getString(R.string.workspace_review_promoted_badge)
                     "changes_requested" -> getString(R.string.workspace_review_changes_requested_badge)
                     else -> workspaceStatus
                 }
+                val note = currentDetail?.promotionNote?.takeIf { it.isNotBlank() }
+                if (note != null) {
+                    binding.promotionNoteText.text = note
+                    binding.promotionNoteText.visibility = View.VISIBLE
+                } else {
+                    binding.promotionNoteText.visibility = View.GONE
+                }
+            }
+        }
+    }
+
+    private fun confirmRejectChangeSet(taskId: String, taskExecutionId: Int) {
+        android.app.AlertDialog.Builder(this)
+            .setTitle("Reject & Restore")
+            .setMessage("Archive this candidate change set and restore the pre-task snapshot?")
+            .setPositiveButton("Reject & Restore") { _, _ -> rejectChangeSet(taskId, taskExecutionId) }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
+    private fun rejectChangeSet(taskId: String, taskExecutionId: Int) {
+        val client = orchestratorClient ?: return
+        binding.rejectChangeSetButton.isEnabled = false
+        lifecycleScope.launch {
+            client.rejectTaskChangeSet(taskId, taskExecutionId).onSuccess {
+                latestChangeSet = null
+                workspaceStatus = "changes_requested"
+                binding.changeSetSummaryRow.visibility = View.GONE
+                updateWorkspaceReviewCard()
+                Toast.makeText(this@TaskDetailActivity, "Change set rejected and workspace restored", Toast.LENGTH_SHORT).show()
+            }.onFailure { error ->
+                binding.rejectChangeSetButton.isEnabled = true
+                Toast.makeText(this@TaskDetailActivity, error.message ?: "Reject failed", Toast.LENGTH_LONG).show()
             }
         }
     }

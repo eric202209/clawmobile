@@ -29,6 +29,7 @@ import com.user.data.ProjectTreeResponse
 import com.user.data.ProjectStatusResponse
 import com.user.data.ProjectTasksResponse
 import com.user.data.KnowledgeUsageResponse
+import com.user.data.TaskChangeSetResponse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -283,17 +284,21 @@ class OrchestratorApiClient(
             taskId = this.id.toString(),
             title = this.title,
             description = this.description,
-            status = this.status.lowercase(),  // Normalize to lowercase
+            status = this.status.lowercase(),
             projectId = this.projectId.toString(),
             sessionId = this.latestSessionId?.toString(),
             sessionName = this.latestSessionName,
             sessionStatus = this.latestSessionStatus,
             hasActiveSession = this.hasActiveSession,
+            isLiveAttempt = this.isLiveAttempt,
             createdAt = this.createdAt,
             updatedAt = this.updatedAt ?: this.createdAt,
             priority = this.priority,
             sequenceIndex = this.sequenceIndex,
-            sequenceTotal = this.sequenceTotal
+            sequenceTotal = this.sequenceTotal,
+            workspaceStatus = this.workspaceStatus,
+            promotionNote = this.promotionNote,
+            promotedAt = this.promotedAt,
         )
     }
 
@@ -940,6 +945,45 @@ class OrchestratorApiClient(
             }
         } catch (e: Exception) {
             buildFailure("Failed to load knowledge usage for session $sessionId.", e)
+        }
+    }
+
+    // ── Phase 9H: Workspace Change Governance ─────────────────────
+
+    suspend fun getLatestTaskChangeSet(taskId: String): Result<TaskChangeSetResponse> = withContext(Dispatchers.IO) {
+        try {
+            val url = buildApiUrl("tasks/$taskId/change-set")
+            val request = Request.Builder()
+                .url(url)
+                .headers(okhttp3.Headers.headersOf(*buildHeadersArray()))
+                .get()
+                .build()
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) return@withContext buildFailure("Get change set failed (${response.code}).")
+                val json = response.body?.string() ?: throw Exception("Empty response")
+                Result.success(gson.fromJson(json, TaskChangeSetResponse::class.java))
+            }
+        } catch (e: Exception) {
+            buildFailure("Failed to load change set for task $taskId.", e)
+        }
+    }
+
+    suspend fun rejectTaskChangeSet(taskId: String, taskExecutionId: Int, note: String? = null): Result<Unit> = withContext(Dispatchers.IO) {
+        try {
+            val url = buildApiUrl("tasks/$taskId/change-set/reject")
+            val noteJson = if (note != null) ",\"note\":\"${note.replace("\"", "\\\"")}\"" else ""
+            val jsonBody = "{\"task_execution_id\":$taskExecutionId$noteJson}"
+            val request = Request.Builder()
+                .url(url)
+                .headers(okhttp3.Headers.headersOf(*buildHeadersArray()))
+                .post(jsonBody.toRequestBody("application/json".toMediaTypeOrNull()))
+                .build()
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) return@withContext buildFailure("Reject change set failed (${response.code}).")
+                Result.success(Unit)
+            }
+        } catch (e: Exception) {
+            buildFailure("Failed to reject change set for task $taskId.", e)
         }
     }
 

@@ -62,6 +62,16 @@
                     android:layout_marginTop="@dimen/space_sm" />
 
                 <TextView
+                    android:id="@+id/projectRulesText"
+                    style="@style/TextAppearance.OpenClaw.SectionBody"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_xs"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="13sp"
+                    android:visibility="gone" />
+
+                <TextView
                     android:id="@+id/projectPrimaryActionView"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -196,6 +206,16 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Files" />
+
+                <!-- Baseline summary (Phase 9H) -->
+                <TextView
+                    android:id="@+id/baselineSummaryText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_sm"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="13sp"
+                    android:visibility="gone" />
 
                 <TextView
                     android:id="@+id/projectTreeSummary"
