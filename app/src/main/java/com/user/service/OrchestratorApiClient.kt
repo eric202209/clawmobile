@@ -482,25 +482,11 @@ class OrchestratorApiClient(
 
     suspend fun stopSession(sessionId: String): Result<MobileSessionActionResponse> = withContext(Dispatchers.IO) {
         try {
-            val url = buildMobileUrl("sessions/${sessionId}/stop")
-            Log.d(TAG, "Stopping session $sessionId via: $url")
-
-            val request = Request.Builder()
-                .url(url)
-                .headers(okhttp3.Headers.headersOf(*buildHeadersArray()))
-                .post(okhttp3.RequestBody.create(null, ByteArray(0)))
-                .build()
-
-            client.newCall(request).execute().use { response ->
-                if (!response.isSuccessful) {
-                    return@withContext buildFailure(
-                        "Stop session API failed for $sessionId (${response.code} ${response.message})."
-                    )
-                }
-
-                val responseBody = response.body?.string() ?: throw Exception("Empty response")
-                Result.success(gson.fromJson(responseBody, MobileSessionActionResponse::class.java))
-            }
+            postSessionActionWithFallback(
+                sessionId = sessionId,
+                action = "stop",
+                defaultMessage = "Session stop requested"
+            )
         } catch (e: Exception) {
             Log.w(TAG, "Error stopping session $sessionId: ${e.message}")
             buildFailure("Failed to stop session $sessionId.", e)
@@ -509,34 +495,98 @@ class OrchestratorApiClient(
 
     suspend fun resumeSession(sessionId: String): Result<MobileSessionActionResponse> = withContext(Dispatchers.IO) {
         try {
-            val url = buildMobileUrl("sessions/${sessionId}/resume")
-            Log.d(TAG, "Resuming session $sessionId via: $url")
-
-            val request = Request.Builder()
-                .url(url)
-                .headers(okhttp3.Headers.headersOf(*buildHeadersArray()))
-                .post(okhttp3.RequestBody.create(null, ByteArray(0)))
-                .build()
-
-            client.newCall(request).execute().use { response ->
-                if (!response.isSuccessful) {
-                    val errorBody = response.body?.string().orEmpty()
-                    val detail = runCatching {
-                        gson.fromJson(errorBody, com.google.gson.JsonObject::class.java)
-                            ?.get("detail")?.asString
-                    }.getOrNull()
-                    return@withContext buildFailure(
-                        detail ?: "Resume session API failed for $sessionId (${response.code} ${response.message})."
-                    )
-                }
-
-                val responseBody = response.body?.string() ?: throw Exception("Empty response")
-                Result.success(gson.fromJson(responseBody, MobileSessionActionResponse::class.java))
-            }
+            postSessionActionWithFallback(
+                sessionId = sessionId,
+                action = "resume",
+                defaultMessage = "Session resume requested"
+            )
         } catch (e: Exception) {
             Log.w(TAG, "Error resuming session $sessionId: ${e.message}")
             buildFailure("Failed to resume session $sessionId.", e)
         }
+    }
+
+    private fun postSessionActionWithFallback(
+        sessionId: String,
+        action: String,
+        defaultMessage: String
+    ): Result<MobileSessionActionResponse> {
+        val actionLabel = action.replaceFirstChar { it.uppercase() }
+        val attempts = buildSessionActionAttempts(sessionId, action)
+        var lastError: String? = null
+        var lastStatus = ""
+
+        attempts.forEachIndexed { index, url ->
+            if (index == 0) {
+                Log.d(TAG, "$actionLabel session $sessionId via: $url")
+            } else {
+                Log.d(TAG, "Retrying $action session $sessionId via: $url")
+            }
+
+            val request = buildEmptyPostRequest(url)
+            client.newCall(request).execute().use { response ->
+                if (response.isSuccessful) {
+                    val responseBody = response.body?.string().orEmpty()
+                    return Result.success(parseSessionActionResponse(responseBody, sessionId, action, defaultMessage))
+                }
+
+                lastStatus = "${response.code} ${response.message}"
+                lastError = readApiError(response.body?.string().orEmpty()) ?: lastError
+                Log.d(TAG, "$actionLabel session endpoint failed for session $sessionId ($lastStatus)")
+            }
+        }
+
+        return buildFailure(
+            lastError ?: "$actionLabel session API failed for $sessionId ($lastStatus)."
+        )
+    }
+
+    private fun buildSessionActionAttempts(sessionId: String, action: String): List<String> {
+        val mobilePath = "sessions/${sessionId}/$action"
+        return if (action == "stop") {
+            listOf(
+                buildMobileUrl("$mobilePath?force=true"),
+                buildMobileUrl(mobilePath)
+            )
+        } else {
+            listOf(
+                buildMobileUrl(mobilePath)
+            )
+        }
+    }
+
+    private fun buildEmptyPostRequest(url: String): Request {
+        return Request.Builder()
+            .url(url)
+            .headers(okhttp3.Headers.headersOf(*buildHeadersArray()))
+            .post(okhttp3.RequestBody.create(null, ByteArray(0)))
+            .build()
+    }
+
+    private fun parseSessionActionResponse(
+        responseBody: String,
+        sessionId: String,
+        action: String,
+        defaultMessage: String
+    ): MobileSessionActionResponse {
+        if (responseBody.isBlank()) {
+            return MobileSessionActionResponse(
+                status = action,
+                sessionId = sessionId.toIntOrNull() ?: 0,
+                message = defaultMessage
+            )
+        }
+        return gson.fromJson(responseBody, MobileSessionActionResponse::class.java)
+    }
+
+    private fun readApiError(errorBody: String): String? {
+        if (errorBody.isBlank()) return null
+        return runCatching {
+            val json = gson.fromJson(errorBody, com.google.gson.JsonObject::class.java)
+            json?.get("detail")?.asString
+                ?: json?.get("error")?.asString
+                ?: json?.get("message")?.asString
+        }.getOrNull() ?: errorBody.take(300)
     }
 
     suspend fun retryTask(taskId: String): Result<MobileTaskActionResponse> = withContext(Dispatchers.IO) {
