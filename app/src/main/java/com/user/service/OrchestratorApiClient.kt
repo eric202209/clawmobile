@@ -457,33 +457,13 @@ class OrchestratorApiClient(
 
             client.newCall(request).execute().use { response ->
                 if (response.code == 404) {
-                    val fallbackUrl = buildApiUrl("sessions/${sessionId}/checkpoints")
-                    Log.d(TAG, "Mobile checkpoints endpoint missing for $sessionId; trying: $fallbackUrl")
-                    val fallbackRequest = Request.Builder()
-                        .url(fallbackUrl)
-                        .headers(okhttp3.Headers.headersOf(*buildHeadersArray(includeGatewayAuthorization = false)))
-                        .get()
-                        .build()
-
-                    client.newCall(fallbackRequest).execute().use { fallbackResponse ->
-                        if (fallbackResponse.code == 404) {
-                            return@withContext Result.success(
-                                MobileCheckpointListResponse(
-                                    sessionId = sessionId.toIntOrNull() ?: 0,
-                                    totalCount = 0,
-                                    checkpoints = emptyList()
-                                )
-                            )
-                        }
-                        if (!fallbackResponse.isSuccessful) {
-                            return@withContext buildFailure(
-                                "Checkpoint API failed for $sessionId (${fallbackResponse.code} ${fallbackResponse.message})."
-                            )
-                        }
-
-                        val fallbackBody = fallbackResponse.body?.string() ?: throw Exception("Empty response")
-                        return@withContext Result.success(gson.fromJson(fallbackBody, MobileCheckpointListResponse::class.java))
-                    }
+                    return@withContext Result.success(
+                        MobileCheckpointListResponse(
+                            sessionId = sessionId.toIntOrNull() ?: 0,
+                            totalCount = 0,
+                            checkpoints = emptyList()
+                        )
+                    )
                 }
                 if (!response.isSuccessful) {
                     return@withContext buildFailure(
@@ -540,8 +520,13 @@ class OrchestratorApiClient(
 
             client.newCall(request).execute().use { response ->
                 if (!response.isSuccessful) {
+                    val errorBody = response.body?.string().orEmpty()
+                    val detail = runCatching {
+                        gson.fromJson(errorBody, com.google.gson.JsonObject::class.java)
+                            ?.get("detail")?.asString
+                    }.getOrNull()
                     return@withContext buildFailure(
-                        "Resume session API failed for $sessionId (${response.code} ${response.message})."
+                        detail ?: "Resume session API failed for $sessionId (${response.code} ${response.message})."
                     )
                 }
 

@@ -3,7 +3,9 @@ package com.user.ui.activities
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.user.ClawMobileApplication
 import com.user.R
@@ -12,6 +14,7 @@ import com.user.databinding.ActivitySessionsBinding
 import com.user.service.OrchestratorApiClient
 import com.user.ui.SessionAdapter
 import com.user.ui.tasks.SessionDetailActivity
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class SessionsActivity : AppCompatActivity() {
@@ -67,11 +70,28 @@ class SessionsActivity : AppCompatActivity() {
         }
 
         loadSessions()
+        startAutoPoll()
     }
 
     override fun onResume() {
         super.onResume()
         loadSessions()
+    }
+
+    private fun startAutoPoll() {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                while (true) {
+                    delay(20_000)
+                    val hasActive = allSessions.any {
+                        it.status.lowercase() == "running" || it.status.lowercase() == "pending"
+                    }
+                    if (hasActive || allSessions.isEmpty()) {
+                        loadSessions()
+                    }
+                }
+            }
+        }
     }
 
     private fun loadSessions() {

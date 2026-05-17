@@ -336,7 +336,7 @@ class SessionDetailActivity : AppCompatActivity() {
 
         binding.pauseButton.visibility = if (status == "running") View.VISIBLE else View.GONE
         binding.resumeButton.visibility = if (resumable) View.VISIBLE else View.GONE
-        binding.stopButton.visibility = if (status == "running") View.VISIBLE else View.GONE
+        binding.stopButton.visibility = if (status == "running" || status == "paused") View.VISIBLE else View.GONE
         binding.resumeButton.text = getString(R.string.resume_button_label)
     }
 
