@@ -21,8 +21,6 @@ import com.user.service.WebSocketManager
 import com.user.ui.FailureSummary
 import com.user.ui.OutputHighlighter
 import com.user.ui.TimeFormatUtils
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
@@ -139,7 +137,7 @@ class SessionDetailActivity : AppCompatActivity() {
 
     private fun pauseSession() {
         val client = orchestratorClient ?: return
-        CoroutineScope(Dispatchers.Main).launch {
+        lifecycleScope.launch {
             client.pauseSession(sessionId).onSuccess {
                 Snackbar.make(binding.root, it.message.ifBlank { "Session paused" }, Snackbar.LENGTH_SHORT).show()
                 loadSessionData(showToast = false)
@@ -160,7 +158,7 @@ class SessionDetailActivity : AppCompatActivity() {
             return
         }
 
-        CoroutineScope(Dispatchers.Main).launch {
+        lifecycleScope.launch {
             client.getSessionSummary(sessionId).onSuccess { summary ->
                 latestSummary = summary
                 bindSummary(summary)
@@ -346,13 +344,15 @@ class SessionDetailActivity : AppCompatActivity() {
             .setTitle("Stop Session")
             .setMessage("Stop this running session now? You can resume later if a useful checkpoint exists.")
             .setPositiveButton("Stop") { _, _ ->
-                CoroutineScope(Dispatchers.Main).launch {
+                binding.stopButton.isEnabled = false
+                lifecycleScope.launch {
                     client.stopSession(sessionId).onSuccess {
                         Snackbar.make(binding.root, it.message.ifBlank { "Session stop requested" }, Snackbar.LENGTH_SHORT).show()
                         loadSessionData(showToast = false)
                     }.onFailure { error ->
                         Snackbar.make(binding.root, error.message ?: "Failed to stop session", Snackbar.LENGTH_LONG).show()
                     }
+                    binding.stopButton.isEnabled = true
                 }
             }
             .setNegativeButton("Cancel", null)
@@ -361,13 +361,15 @@ class SessionDetailActivity : AppCompatActivity() {
 
     private fun resumeSession() {
         val client = orchestratorClient ?: return
-        CoroutineScope(Dispatchers.Main).launch {
+        binding.resumeButton.isEnabled = false
+        lifecycleScope.launch {
             client.resumeSession(sessionId).onSuccess {
                 Snackbar.make(binding.root, it.message.ifBlank { "Session resume requested" }, Snackbar.LENGTH_SHORT).show()
                 loadSessionData(showToast = false)
             }.onFailure { error ->
                 Snackbar.make(binding.root, error.message ?: "Failed to resume session", Snackbar.LENGTH_LONG).show()
             }
+            binding.resumeButton.isEnabled = true
         }
     }
 
@@ -514,7 +516,7 @@ class SessionDetailActivity : AppCompatActivity() {
     private fun handleApproveIntervention() {
         val client = orchestratorClient ?: return
         val intervention = currentIntervention ?: return
-        CoroutineScope(Dispatchers.Main).launch {
+        lifecycleScope.launch {
             client.approveIntervention(sessionId, intervention.id).onSuccess {
                 Snackbar.make(binding.root, "Approved — session resuming", Snackbar.LENGTH_SHORT).show()
                 loadSessionData(showToast = false)
@@ -527,7 +529,7 @@ class SessionDetailActivity : AppCompatActivity() {
     private fun handleDenyIntervention() {
         val client = orchestratorClient ?: return
         val intervention = currentIntervention ?: return
-        CoroutineScope(Dispatchers.Main).launch {
+        lifecycleScope.launch {
             client.denyIntervention(sessionId, intervention.id).onSuccess {
                 Snackbar.make(binding.root, "Denied — session resuming with denial context", Snackbar.LENGTH_SHORT).show()
                 loadSessionData(showToast = false)
@@ -545,7 +547,7 @@ class SessionDetailActivity : AppCompatActivity() {
             Snackbar.make(binding.root, "Enter guidance before submitting", Snackbar.LENGTH_SHORT).show()
             return
         }
-        CoroutineScope(Dispatchers.Main).launch {
+        lifecycleScope.launch {
             client.replyToIntervention(sessionId, intervention.id, reply).onSuccess {
                 binding.interventionReplyInput.text?.clear()
                 Snackbar.make(binding.root, "Guidance sent — session resuming", Snackbar.LENGTH_SHORT).show()
@@ -573,7 +575,7 @@ class SessionDetailActivity : AppCompatActivity() {
     private fun handleSendToProjectArchitect() {
         val client = orchestratorClient ?: return
         val feedback = binding.operatorFeedbackInput.text?.toString()?.trim().orEmpty()
-        CoroutineScope(Dispatchers.Main).launch {
+        lifecycleScope.launch {
             if (feedback.isNotBlank()) {
                 client.submitOperatorFeedback(sessionId, feedback).onFailure { error ->
                     Snackbar.make(binding.root, error.message ?: "Failed to save feedback", Snackbar.LENGTH_LONG).show()
