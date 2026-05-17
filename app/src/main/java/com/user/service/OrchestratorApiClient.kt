@@ -453,6 +453,35 @@ class OrchestratorApiClient(
                 .build()
 
             client.newCall(request).execute().use { response ->
+                if (response.code == 404) {
+                    val fallbackUrl = buildApiUrl("sessions/${sessionId}/checkpoints")
+                    Log.d(TAG, "Mobile checkpoints endpoint missing for $sessionId; trying: $fallbackUrl")
+                    val fallbackRequest = Request.Builder()
+                        .url(fallbackUrl)
+                        .headers(okhttp3.Headers.headersOf(*buildHeadersArray()))
+                        .get()
+                        .build()
+
+                    client.newCall(fallbackRequest).execute().use { fallbackResponse ->
+                        if (fallbackResponse.code == 404) {
+                            return@withContext Result.success(
+                                MobileCheckpointListResponse(
+                                    sessionId = sessionId.toIntOrNull() ?: 0,
+                                    totalCount = 0,
+                                    checkpoints = emptyList()
+                                )
+                            )
+                        }
+                        if (!fallbackResponse.isSuccessful) {
+                            return@withContext buildFailure(
+                                "Checkpoint API failed for $sessionId (${fallbackResponse.code} ${fallbackResponse.message})."
+                            )
+                        }
+
+                        val fallbackBody = fallbackResponse.body?.string() ?: throw Exception("Empty response")
+                        return@withContext Result.success(gson.fromJson(fallbackBody, MobileCheckpointListResponse::class.java))
+                    }
+                }
                 if (!response.isSuccessful) {
                     return@withContext buildFailure(
                         "Checkpoint API failed for $sessionId (${response.code} ${response.message})."
@@ -804,7 +833,7 @@ class OrchestratorApiClient(
                 if (!status.isNullOrBlank()) append("?status=$status")
             }
             val request = Request.Builder()
-                .url(buildApiUrl(path))
+                .url(buildMobileUrl(path))
                 .headers(okhttp3.Headers.headersOf(*buildHeadersArray()))
                 .get()
                 .build()
@@ -820,7 +849,7 @@ class OrchestratorApiClient(
 
     suspend fun replyToIntervention(sessionId: String, interventionId: Int, reply: String): Result<InterventionRequest> = withContext(Dispatchers.IO) {
         try {
-            val url = buildApiUrl("sessions/$sessionId/interventions/$interventionId/reply")
+            val url = buildMobileUrl("sessions/$sessionId/interventions/$interventionId/reply")
             val jsonBody = "{\"reply\":\"${reply.replace("\"", "\\\"")}\"}"
             val request = Request.Builder()
                 .url(url)
@@ -839,7 +868,7 @@ class OrchestratorApiClient(
 
     suspend fun approveIntervention(sessionId: String, interventionId: Int): Result<InterventionRequest> = withContext(Dispatchers.IO) {
         try {
-            val url = buildApiUrl("sessions/$sessionId/interventions/$interventionId/approve")
+            val url = buildMobileUrl("sessions/$sessionId/interventions/$interventionId/approve")
             val request = Request.Builder()
                 .url(url)
                 .headers(okhttp3.Headers.headersOf(*buildHeadersArray()))
@@ -857,7 +886,7 @@ class OrchestratorApiClient(
 
     suspend fun denyIntervention(sessionId: String, interventionId: Int, reason: String? = null): Result<InterventionRequest> = withContext(Dispatchers.IO) {
         try {
-            val url = buildApiUrl("sessions/$sessionId/interventions/$interventionId/deny")
+            val url = buildMobileUrl("sessions/$sessionId/interventions/$interventionId/deny")
             val jsonBody = if (reason != null) "{\"reason\":\"${reason.replace("\"", "\\\"")}\"}" else "{}"
             val request = Request.Builder()
                 .url(url)
@@ -878,7 +907,7 @@ class OrchestratorApiClient(
 
     suspend fun getFailureSummary(sessionId: String): Result<ExecutionFailureSummaryResponse> = withContext(Dispatchers.IO) {
         try {
-            val url = buildApiUrl("sessions/$sessionId/failure-summary")
+            val url = buildMobileUrl("sessions/$sessionId/failure-summary")
             val request = Request.Builder()
                 .url(url)
                 .headers(okhttp3.Headers.headersOf(*buildHeadersArray()))
@@ -896,7 +925,7 @@ class OrchestratorApiClient(
 
     suspend fun submitOperatorFeedback(sessionId: String, feedback: String): Result<Unit> = withContext(Dispatchers.IO) {
         try {
-            val url = buildApiUrl("sessions/$sessionId/operator-feedback")
+            val url = buildMobileUrl("sessions/$sessionId/operator-feedback")
             val jsonBody = "{\"feedback\":\"${feedback.replace("\"", "\\\"")}\"}"
             val request = Request.Builder()
                 .url(url)
@@ -914,7 +943,7 @@ class OrchestratorApiClient(
 
     suspend fun triggerReplan(sessionId: String): Result<ReplanResponse> = withContext(Dispatchers.IO) {
         try {
-            val url = buildApiUrl("sessions/$sessionId/replan")
+            val url = buildMobileUrl("sessions/$sessionId/replan")
             val request = Request.Builder()
                 .url(url)
                 .headers(okhttp3.Headers.headersOf(*buildHeadersArray()))
@@ -952,7 +981,7 @@ class OrchestratorApiClient(
 
     suspend fun getLatestTaskChangeSet(taskId: String): Result<TaskChangeSetResponse> = withContext(Dispatchers.IO) {
         try {
-            val url = buildApiUrl("tasks/$taskId/change-set")
+            val url = buildMobileUrl("tasks/$taskId/change-set")
             val request = Request.Builder()
                 .url(url)
                 .headers(okhttp3.Headers.headersOf(*buildHeadersArray()))
@@ -970,7 +999,7 @@ class OrchestratorApiClient(
 
     suspend fun rejectTaskChangeSet(taskId: String, taskExecutionId: Int, note: String? = null): Result<Unit> = withContext(Dispatchers.IO) {
         try {
-            val url = buildApiUrl("tasks/$taskId/change-set/reject")
+            val url = buildMobileUrl("tasks/$taskId/change-set/reject")
             val noteJson = if (note != null) ",\"note\":\"${note.replace("\"", "\\\"")}\"" else ""
             val jsonBody = "{\"task_execution_id\":$taskExecutionId$noteJson}"
             val request = Request.Builder()

@@ -55,13 +55,23 @@ class CheckpointsBottomSheet : BottomSheetDialogFragment() {
     }
 
     private fun loadCheckpoints() {
-        val client = orchestratorClient ?: return
+        val client = orchestratorClient ?: run {
+            binding.emptyText.text = "Orchestrator is not configured"
+            binding.emptyText.visibility = View.VISIBLE
+            binding.checkpointList.visibility = View.GONE
+            return
+        }
         lifecycleScope.launch {
             client.getSessionCheckpoints(sessionId).onSuccess { response ->
                 currentCheckpoints = response.checkpoints.toMutableList()
                 adapter.submitList(currentCheckpoints.toList())
+                binding.emptyText.text = getString(R.string.checkpoints_empty)
                 binding.emptyText.visibility = if (currentCheckpoints.isEmpty()) View.VISIBLE else View.GONE
                 binding.checkpointList.visibility = if (currentCheckpoints.isEmpty()) View.GONE else View.VISIBLE
+            }.onFailure { error ->
+                binding.emptyText.text = error.message ?: getString(R.string.checkpoints_empty)
+                binding.emptyText.visibility = View.VISIBLE
+                binding.checkpointList.visibility = View.GONE
             }
         }
     }

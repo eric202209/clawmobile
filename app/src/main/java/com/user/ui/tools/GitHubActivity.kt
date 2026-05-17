@@ -39,7 +39,7 @@ class GitHubActivity : AppCompatActivity() {
 
         setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        title = "GitHub Integration"
+        title = getString(com.user.R.string.main_menu_github)
 
         gitDao = (application as ClawMobileApplication).gitConnectionDao
         prefs = PrefsManager(this)

@@ -263,30 +263,43 @@ class SessionDetailActivity : AppCompatActivity() {
         val bestCheckpoint = checkpoints.checkpoints.lastOrNull()
 
         binding.checkpointSummaryView.text = if (checkpoints.totalCount > 0) {
-            val bestLabel = bestCheckpoint?.let { checkpoint ->
-                val stepSuffix = checkpoint.stepIndex?.let { " • step $it" } ?: ""
-                "Best resume point: ${checkpoint.name}$stepSuffix"
-            }.orEmpty()
-            "${checkpoints.totalCount} checkpoint(s) available\n$bestLabel"
+            "${checkpoints.totalCount} available"
         } else {
-            "No checkpoints available yet"
+            "None yet"
         }
-        val recentCheckpointLines = checkpoints.checkpoints
+        val checkpointLines = checkpoints.checkpoints
             .asReversed()
-            .filterNot { checkpoint -> checkpoint.name == bestCheckpoint?.name }
-            .take(3)
-            .map { checkpoint ->
+            .mapIndexed { index, checkpoint ->
                 val stepSuffix = checkpoint.stepIndex?.let { " • step $it" } ?: ""
-                "- ${checkpoint.name}$stepSuffix"
+                val typeSuffix = checkpoint.checkpointType?.takeIf { it.isNotBlank() }?.let {
+                    " • $it"
+                } ?: ""
+                val completedSuffix = if (checkpoint.completedSteps > 0) {
+                    " • ${checkpoint.completedSteps} completed"
+                } else {
+                    ""
+                }
+                val createdSuffix = checkpoint.createdAt
+                    ?.let(TimeFormatUtils::formatApiTimestamp)
+                    ?.let { " • $it" }
+                    .orEmpty()
+                val descriptionSuffix = checkpoint.description?.takeIf { it.isNotBlank() }?.let {
+                    " • $it"
+                } ?: ""
+                val resumableSuffix = if (checkpoint.resumable) "" else " • inspect"
+                val bestPrefix = if (checkpoint.name == bestCheckpoint?.name) "Best: " else ""
+                "${index + 1}. $bestPrefix${checkpoint.name}$typeSuffix$stepSuffix$completedSuffix$descriptionSuffix$resumableSuffix$createdSuffix"
             }
 
-        binding.checkpointListView.text = if (recentCheckpointLines.isEmpty()) {
-            ""
+        binding.checkpointListView.text = if (checkpointLines.isEmpty()) {
+            "No checkpoints are available for this session yet."
         } else {
-            recentCheckpointLines.joinToString("\n")
+            checkpointLines.joinToString("\n")
         }
-        binding.checkpointListView.visibility =
-            if (recentCheckpointLines.isEmpty()) View.GONE else View.VISIBLE
+        binding.checkpointListView.visibility = View.VISIBLE
+        binding.checkpointsContent.visibility =
+            if (checkpoints.totalCount > 0) View.VISIBLE else View.GONE
+        binding.checkpointsChevron.rotation = if (checkpoints.totalCount > 0) 180f else 0f
     }
 
     private fun renderRecoveryCard() {

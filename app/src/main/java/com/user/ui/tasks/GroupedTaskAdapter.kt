@@ -13,6 +13,7 @@ import com.user.data.OrchestTask
 import com.user.ui.components.StatusBadgeView
 
 class GroupedTaskAdapter(
+    private val onHeaderClick: (String) -> Unit,
     private val onTaskClick: (OrchestTask) -> Unit,
     private val onTaskLongPress: ((OrchestTask) -> Unit)? = null,
 ) : ListAdapter<GroupedTaskAdapter.ListItem, RecyclerView.ViewHolder>(DiffCallback()) {
@@ -22,6 +23,7 @@ class GroupedTaskAdapter(
             val projectId: String,
             val projectName: String,
             val count: Int,
+            val isExpanded: Boolean,
         ) : ListItem()
 
         data class Task(val task: OrchestTask) : ListItem()
@@ -56,9 +58,12 @@ class GroupedTaskAdapter(
     inner class HeaderVH(v: View) : RecyclerView.ViewHolder(v) {
         private val name: TextView = v.findViewById(R.id.projectHeaderName)
         private val count: TextView = v.findViewById(R.id.projectHeaderCount)
+        private val chevron: View = v.findViewById(R.id.projectHeaderChevron)
         fun bind(h: ListItem.Header) {
             name.text = h.projectName
             count.text = "${h.count} task${if (h.count == 1) "" else "s"}"
+            chevron.rotation = if (h.isExpanded) 180f else 0f
+            itemView.setOnClickListener { onHeaderClick(h.projectId) }
         }
     }
 

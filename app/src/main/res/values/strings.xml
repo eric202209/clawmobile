@@ -160,7 +160,7 @@
     <string name="main_menu_subtitle">Jump to the tools you use most.</string>
     <string name="main_menu_new_chat">New chat</string>
     <string name="main_menu_history">History</string>
-    <string name="main_menu_tasks">Tasks</string>
+    <string name="main_menu_tasks">Runs</string>
     <string name="main_menu_github">GitHub</string>
     <string name="main_menu_commands">Commands</string>
     <string name="main_menu_settings">Settings</string>
@@ -185,6 +185,7 @@
     <string name="task_hub_projects_subtitle">Pinned projects stay on top. Tap a project to inspect details.</string>
     <string name="task_hub_tasks_title">Tasks</string>
     <string name="task_hub_tasks_subtitle">Search and filter the current task queue.</string>
+    <string name="task_hub_title">Runs</string>
 
     <!-- Status badge labels -->
     <string name="status_running">Running</string>

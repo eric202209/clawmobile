@@ -336,7 +336,11 @@ data class MobileCheckpoint(
     @SerializedName("step_index")
     val stepIndex: Int? = null,
     @SerializedName("completed_steps")
-    val completedSteps: Int = 0
+    val completedSteps: Int = 0,
+    @SerializedName("checkpoint_type")
+    val checkpointType: String? = null,
+    val description: String? = null,
+    val resumable: Boolean = true
 )
 
 data class MobileCheckpointListResponse(

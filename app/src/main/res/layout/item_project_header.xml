@@ -32,4 +32,12 @@
         android:layout_marginStart="@dimen/space_sm"
         android:textColor="@color/text_secondary"
         android:textSize="12sp" />
+
+    <ImageView
+        android:id="@+id/projectHeaderChevron"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_marginStart="@dimen/space_sm"
+        android:contentDescription="Expand project tasks"
+        android:src="@drawable/ic_chevron_down" />
 </LinearLayout>

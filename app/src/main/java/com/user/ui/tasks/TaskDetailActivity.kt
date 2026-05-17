@@ -475,6 +475,7 @@ class TaskDetailActivity : AppCompatActivity() {
         val openSessionBtn = binding.openSessionButton
         val startBtn = binding.startButton
         val linkedSessionId = currentTask?.sessionId?.takeIf { it.isNotBlank() }
+        val isRemoteTask = orchestratorClient != null
         val canOpenSession = linkedSessionId != null && status !in setOf(
             TaskStatus.PENDING,
             TaskStatus.APPROVED,
@@ -496,7 +497,7 @@ class TaskDetailActivity : AppCompatActivity() {
 
         when (status) {
             TaskStatus.PENDING -> {
-                val canAct = orchestratorClient != null || sessionId.isNotBlank()
+                val canAct = !isRemoteTask && sessionId.isNotBlank()
                 approveBtn.visibility = if (canAct) android.view.View.VISIBLE else android.view.View.GONE
                 rejectBtn.visibility = if (canAct) android.view.View.VISIBLE else android.view.View.GONE
                 startBtn.visibility = android.view.View.GONE
@@ -513,7 +514,7 @@ class TaskDetailActivity : AppCompatActivity() {
                 }
             }
             TaskStatus.APPROVED -> {
-                val canAct = orchestratorClient != null || sessionId.isNotBlank()
+                val canAct = !isRemoteTask && sessionId.isNotBlank()
                 approveBtn.visibility = android.view.View.GONE
                 rejectBtn.visibility = android.view.View.GONE
                 startBtn.visibility = if (canAct) android.view.View.VISIBLE else android.view.View.GONE

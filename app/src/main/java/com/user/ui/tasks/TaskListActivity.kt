@@ -28,7 +28,6 @@ import com.user.databinding.ActivityTaskListBinding
 import com.user.service.OrchestratorApiClient
 import com.user.ui.CommandAssist
 import com.user.ui.activities.SessionsActivity
-import com.user.ui.permissions.PermissionsActivity
 import com.user.ui.tasks.ProjectProgressAdapter
 import com.user.viewmodel.TaskViewModel
 import com.user.viewmodel.TaskViewModelFactory
@@ -87,6 +86,7 @@ class TaskListActivity : AppCompatActivity() {
     private var latestDiagnosticsSnapshot: DiagnosticsSnapshot? = null
     private val allProjectTasks = mutableMapOf<String, Pair<String, List<OrchestTask>>>()
     private var groupedTaskAdapter: GroupedTaskAdapter? = null
+    private val expandedProjectIds = mutableSetOf<String>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -94,7 +94,7 @@ class TaskListActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         setSupportActionBar(binding.toolbar)
-        supportActionBar?.title = "Tasks"
+        supportActionBar?.title = getString(R.string.task_hub_title)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         binding.orchestratorStatsView.setOnClickListener {
             if (prefsManager.isOrchestratorConfigured().not() || lastDiagnosticsMessage != null) {
@@ -190,6 +190,12 @@ class TaskListActivity : AppCompatActivity() {
             }
         )
         groupedTaskAdapter = GroupedTaskAdapter(
+            onHeaderClick = { projectId ->
+                if (!expandedProjectIds.add(projectId)) {
+                    expandedProjectIds.remove(projectId)
+                }
+                buildGroupedList()
+            },
             onTaskClick = { task -> viewOrchestTaskDetails(task) },
             onTaskLongPress = { task ->
                 CommandAssist.showTaskActions(this, task.taskId, task.title)
@@ -859,8 +865,11 @@ class TaskListActivity : AppCompatActivity() {
             }
 
             if (filtered.isNotEmpty()) {
-                items.add(GroupedTaskAdapter.ListItem.Header(projectId, project.name, filtered.size))
-                filtered.forEach { items.add(GroupedTaskAdapter.ListItem.Task(it)) }
+                val isExpanded = projectId in expandedProjectIds
+                items.add(GroupedTaskAdapter.ListItem.Header(projectId, project.name, filtered.size, isExpanded))
+                if (isExpanded) {
+                    filtered.forEach { items.add(GroupedTaskAdapter.ListItem.Task(it)) }
+                }
             }
         }
 
@@ -937,10 +946,6 @@ class TaskListActivity : AppCompatActivity() {
                     viewModel.loadTasks()
                     Snackbar.make(binding.root, "Refreshing tasks (local)...", Snackbar.LENGTH_SHORT).show()
                 }
-                true
-            }
-            R.id.action_permissions -> {
-                startActivity(Intent(this, PermissionsActivity::class.java))
                 true
             }
             else -> super.onOptionsItemSelected(item)

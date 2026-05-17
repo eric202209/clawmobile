@@ -55,7 +55,7 @@ class SettingsActivity : AppCompatActivity() {
 
         setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        title = "Settings"
+        title = getString(com.user.R.string.main_menu_settings)
 
         prefs = PrefsManager(this)
 
@@ -281,4 +281,3 @@ class SettingsActivity : AppCompatActivity() {
         Toast.makeText(this, message, Toast.LENGTH_LONG).show()
     }
 }
-

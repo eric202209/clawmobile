@@ -8,8 +8,4 @@
         android:icon="@drawable/ic_refresh"
         app:showAsAction="ifRoom"/>
 
-    <item
-        android:id="@+id/action_permissions"
-        android:title="@string/nav_permissions"
-        app:showAsAction="never"/>
 </menu>

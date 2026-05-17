@@ -47,9 +47,14 @@ class CheckpointAdapter(
             val time = checkpoint.createdAt
                 ?.let { TimeFormatUtils.formatApiTimestamp(it) ?: it }
                 ?: ""
-            binding.checkpointMeta.text = listOf(time, steps).filter { it.isNotBlank() }.joinToString(" · ")
+            val type = checkpoint.checkpointType.orEmpty()
+            val description = checkpoint.description.orEmpty()
+            val mode = if (checkpoint.resumable) "" else "Inspect only"
+            binding.checkpointMeta.text = listOf(time, type, steps, description, mode)
+                .filter { it.isNotBlank() }
+                .joinToString(" · ")
 
-            binding.loadButton.visibility = if (selectionMode) View.GONE else View.VISIBLE
+            binding.loadButton.visibility = if (selectionMode || !checkpoint.resumable) View.GONE else View.VISIBLE
             binding.selectCheckbox.visibility = if (selectionMode) View.VISIBLE else View.GONE
 
             if (selectionMode) {
@@ -60,6 +65,7 @@ class CheckpointAdapter(
             } else {
                 binding.loadButton.setOnClickListener { onLoad(checkpoint) }
                 binding.root.setOnLongClickListener {
+                    if (!checkpoint.resumable) return@setOnLongClickListener true
                     setSelectionMode(true)
                     selected.add(checkpoint.name)
                     notifyDataSetChanged()
@@ -78,6 +84,11 @@ class CheckpointAdapter(
                     val item = getItem(pos)
                     onDelete(item, pos)
                 }
+            }
+            override fun getSwipeDirs(rv: RecyclerView, vh: RecyclerView.ViewHolder): Int {
+                val pos = vh.adapterPosition
+                if (pos == RecyclerView.NO_POSITION || !getItem(pos).resumable) return 0
+                return super.getSwipeDirs(rv, vh)
             }
             override fun isItemViewSwipeEnabled() = !selectionMode
         }).attachToRecyclerView(recyclerView)
