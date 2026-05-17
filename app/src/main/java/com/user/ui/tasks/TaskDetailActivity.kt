@@ -55,6 +55,13 @@ class TaskDetailActivity : AppCompatActivity() {
         val taskId = intent.getStringExtra("task_id") ?: ""
         sessionId = intent.getStringExtra("session_id") ?: ""
 
+        binding.resultAccordionHeader.setOnClickListener {
+            toggleAccordion(binding.resultContent, binding.resultChevron)
+        }
+        binding.errorAccordionHeader.setOnClickListener {
+            toggleAccordion(binding.errorContent, binding.errorChevron)
+        }
+
         setupViewModel(sessionId)
         loadTask(taskId)
     }
@@ -334,12 +341,14 @@ class TaskDetailActivity : AppCompatActivity() {
         }
 
         val hasPrimary = primaryText.isNotBlank()
+        binding.resultAccordionCard.visibility = if (hasPrimary) View.VISIBLE else View.GONE
         binding.taskResultLabel.text = primaryLabel
         binding.taskResult.text = OutputHighlighter.render(this, primaryText, isError = primaryIsError)
         binding.taskResultLabel.visibility = if (hasPrimary) View.VISIBLE else View.GONE
         binding.taskResult.visibility = if (hasPrimary) View.VISIBLE else View.GONE
 
         val hasSecondary = !secondaryText.isNullOrBlank()
+        binding.errorAccordionCard.visibility = if (hasSecondary) View.VISIBLE else View.GONE
         binding.taskErrorLabel.text = secondaryLabel.orEmpty()
         binding.taskError.text = OutputHighlighter.render(
             this,
@@ -626,6 +635,12 @@ class TaskDetailActivity : AppCompatActivity() {
             diff < 86400_000 -> "${diff / 3600_000}h ago"
             else -> "${diff / 86400_000}d ago"
         }
+    }
+
+    private fun toggleAccordion(content: android.view.View, chevron: android.widget.ImageView) {
+        val expanding = content.visibility != android.view.View.VISIBLE
+        content.visibility = if (expanding) android.view.View.VISIBLE else android.view.View.GONE
+        chevron.animate().rotation(if (expanding) 180f else 0f).setDuration(200).start()
     }
 
     override fun onSupportNavigateUp(): Boolean {

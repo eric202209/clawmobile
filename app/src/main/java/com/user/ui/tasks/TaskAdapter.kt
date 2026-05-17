@@ -3,13 +3,11 @@ package com.user.ui.tasks
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import com.user.R
 import com.user.data.Task
-import com.user.data.TaskStatus
 import com.user.ui.components.StatusBadgeView
 
 /**
@@ -40,11 +38,6 @@ class TaskAdapter(
         private val priorityText: TextView = itemView.findViewById(R.id.taskPriority)
         private val timeText: TextView = itemView.findViewById(R.id.taskTime)
 
-        private val approveButton: Button? = itemView.findViewById(R.id.approveButton)
-        private val rejectButton: Button? = itemView.findViewById(R.id.rejectButton)
-        private val startButton: Button? = itemView.findViewById(R.id.startButton)
-        private val viewButton: Button = itemView.findViewById(R.id.viewButton)
-
         fun bind(task: Task) {
             titleText.text = task.title
             descriptionText.text = task.description.take(100) +
@@ -53,19 +46,11 @@ class TaskAdapter(
             priorityText.text = "Priority: ${task.priority}"
             timeText.text = formatTime(task.createdAt)
 
-            approveButton?.visibility = if (task.status == TaskStatus.PENDING) View.VISIBLE else View.GONE
-            rejectButton?.visibility = if (task.status == TaskStatus.PENDING) View.VISIBLE else View.GONE
-            startButton?.visibility = if (task.status == TaskStatus.APPROVED) View.VISIBLE else View.GONE
-
-            viewButton.setOnClickListener { onViewClick(task) }
+            itemView.setOnClickListener { onViewClick(task) }
             itemView.setOnLongClickListener {
                 onLongPress?.invoke(task)
                 true
             }
-
-            approveButton?.setOnClickListener { onApproveClick(task) }
-            rejectButton?.setOnClickListener { onRejectClick(task) }
-            startButton?.setOnClickListener { onStartClick(task) }
         }
 
         private fun formatTime(timestamp: Long): String {

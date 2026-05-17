@@ -202,11 +202,13 @@
 
         <!-- Tier 3a: Result accordion (collapsed by default) -->
         <com.google.android.material.card.MaterialCardView
+            android:id="@+id/resultAccordionCard"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/space_lg"
             android:layout_marginTop="@dimen/space_md"
             android:layout_marginEnd="@dimen/space_lg"
+            android:visibility="gone"
             app:cardBackgroundColor="@color/surface"
             app:cardCornerRadius="@dimen/radius_md"
             app:cardElevation="0dp">
@@ -245,7 +247,7 @@
                         app:tint="@color/text_secondary" />
                 </LinearLayout>
 
-                <!-- Accordion content -->
+                <!-- Accordion content — expanded by default -->
                 <LinearLayout
                     android:id="@+id/resultContent"
                     android:layout_width="match_parent"
@@ -253,8 +255,7 @@
                     android:orientation="vertical"
                     android:paddingStart="@dimen/space_lg"
                     android:paddingEnd="@dimen/space_lg"
-                    android:paddingBottom="@dimen/space_lg"
-                    android:visibility="gone">
+                    android:paddingBottom="@dimen/space_lg">
 
                     <TextView
                         android:id="@+id/taskResult"
@@ -272,11 +273,13 @@
 
         <!-- Tier 3b: Error details accordion (collapsed by default) -->
         <com.google.android.material.card.MaterialCardView
+            android:id="@+id/errorAccordionCard"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/space_lg"
             android:layout_marginTop="@dimen/space_md"
             android:layout_marginEnd="@dimen/space_lg"
+            android:visibility="gone"
             app:cardBackgroundColor="@color/surface"
             app:cardCornerRadius="@dimen/radius_md"
             app:cardElevation="0dp">
@@ -317,7 +320,7 @@
                         app:tint="@color/text_secondary" />
                 </LinearLayout>
 
-                <!-- Accordion content -->
+                <!-- Accordion content — expanded by default -->
                 <LinearLayout
                     android:id="@+id/errorContent"
                     android:layout_width="match_parent"
@@ -325,8 +328,7 @@
                     android:orientation="vertical"
                     android:paddingStart="@dimen/space_lg"
                     android:paddingEnd="@dimen/space_lg"
-                    android:paddingBottom="@dimen/space_lg"
-                    android:visibility="gone">
+                    android:paddingBottom="@dimen/space_lg">
 
                     <TextView
                         android:id="@+id/taskError"

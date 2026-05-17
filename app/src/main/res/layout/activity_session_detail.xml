@@ -300,132 +300,6 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Tier 2: Task Progress — visual bar replaces raw text -->
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/space_lg"
-            android:layout_marginTop="@dimen/space_md"
-            android:layout_marginEnd="@dimen/space_lg"
-            app:cardBackgroundColor="@color/surface"
-            app:cardCornerRadius="@dimen/radius_md"
-            app:cardElevation="0dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="@dimen/space_lg">
-
-                <TextView
-                    style="@style/TextAppearance.OpenClaw.SectionTitle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Task Progress" />
-
-                <!-- Visual progress bar -->
-                <com.google.android.material.progressindicator.LinearProgressIndicator
-                    android:id="@+id/sessionProgressBar"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/space_md"
-                    android:indeterminate="false"
-                    app:indicatorColor="@color/status_running"
-                    app:trackColor="@color/surface_container_high"
-                    app:trackCornerRadius="4dp" />
-
-                <!-- Stat chips row: Done / Running / Pending -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/space_md"
-                    android:orientation="horizontal"
-                    android:weightSum="3">
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:gravity="center"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:id="@+id/progressStatDone"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="0"
-                            android:textColor="@color/status_completed"
-                            android:textSize="20sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Done"
-                            android:textColor="@color/text_secondary"
-                            android:textSize="11sp" />
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:gravity="center"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:id="@+id/progressStatRunning"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="0"
-                            android:textColor="@color/status_running"
-                            android:textSize="20sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Running"
-                            android:textColor="@color/text_secondary"
-                            android:textSize="11sp" />
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:gravity="center"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:id="@+id/progressStatPending"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="0"
-                            android:textColor="@color/status_pending"
-                            android:textSize="20sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Pending"
-                            android:textColor="@color/text_secondary"
-                            android:textSize="11sp" />
-                    </LinearLayout>
-                </LinearLayout>
-
-                <!-- Raw text fallback (hidden; Activity still sets it for compat) -->
-                <TextView
-                    android:id="@+id/taskProgressView"
-                    style="@style/TextAppearance.OpenClaw.SectionBody"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/space_sm"
-                    android:visibility="gone" />
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
-
         <!-- Session failure summary (conditional) -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/sessionFailureCard"
@@ -685,7 +559,7 @@
                         app:tint="@color/text_secondary" />
                 </LinearLayout>
 
-                <!-- Accordion content: hidden by default -->
+                <!-- Logs expanded by default; checkpointsContent stays collapsed -->
                 <LinearLayout
                     android:id="@+id/logsContent"
                     android:layout_width="match_parent"
@@ -693,8 +567,7 @@
                     android:orientation="vertical"
                     android:paddingStart="@dimen/space_lg"
                     android:paddingEnd="@dimen/space_lg"
-                    android:paddingBottom="@dimen/space_lg"
-                    android:visibility="gone">
+                    android:paddingBottom="@dimen/space_lg">
 
                     <TextView
                         android:id="@+id/logTimelineHint"

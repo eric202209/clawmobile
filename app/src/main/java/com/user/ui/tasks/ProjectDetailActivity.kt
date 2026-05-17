@@ -55,6 +55,10 @@ class ProjectDetailActivity : AppCompatActivity() {
         supportActionBar?.title = if (projectId.isBlank()) getString(R.string.nav_projects) else projectName
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
+        binding.filesAccordionHeader.setOnClickListener {
+            toggleAccordion(binding.filesContent, binding.filesChevron)
+        }
+
         setupTaskList()
         if (projectId.isBlank()) {
             promptForProject()
@@ -319,6 +323,12 @@ class ProjectDetailActivity : AppCompatActivity() {
             binding.taskProgressIndicator.visibility = View.GONE
             binding.taskProgressText.visibility = View.GONE
         }
+    }
+
+    private fun toggleAccordion(content: android.view.View, chevron: android.widget.ImageView) {
+        val expanding = content.visibility != android.view.View.VISIBLE
+        content.visibility = if (expanding) android.view.View.VISIBLE else android.view.View.GONE
+        chevron.animate().rotation(if (expanding) 180f else 0f).setDuration(200).start()
     }
 
     override fun onSupportNavigateUp(): Boolean {

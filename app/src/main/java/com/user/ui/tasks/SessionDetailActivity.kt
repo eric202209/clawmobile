@@ -98,6 +98,13 @@ class SessionDetailActivity : AppCompatActivity() {
         binding.interventionSubmitButton.setOnClickListener { handleSubmitGuidance() }
         binding.sendToProjectArchitectButton.setOnClickListener { handleSendToProjectArchitect() }
 
+        binding.checkpointsAccordionHeader.setOnClickListener {
+            toggleAccordion(binding.checkpointsContent, binding.checkpointsChevron)
+        }
+        binding.logsAccordionHeader.setOnClickListener {
+            toggleAccordion(binding.logsContent, binding.logsChevron)
+        }
+
         loadSessionData(showToast = false)
     }
 
@@ -226,15 +233,6 @@ class SessionDetailActivity : AppCompatActivity() {
         binding.sessionStartedAt.text = TimeFormatUtils.formatApiTimestamp(summary.startedAt)
             ?.let { "Started: $it" }
             ?: "Started time unavailable"
-        binding.taskProgressView.text = progress?.let {
-            buildString {
-                append("${it.total} task${if (it.total != 1) "s" else ""}")
-                if (it.failed > 0) append(" · ${it.failed} failed")
-                if (it.running > 0) append(" · ${it.running} running")
-                if (it.done > 0) append(" · ${it.done} done")
-                if (it.pending > 0) append(" · ${it.pending} pending")
-            }
-        } ?: "No task progress available."
 
         latestLogs = summary.recentLogs
         renderRecentLogs()
@@ -577,6 +575,12 @@ class SessionDetailActivity : AppCompatActivity() {
                 Snackbar.make(binding.root, error.message ?: "Failed to trigger replan", Snackbar.LENGTH_LONG).show()
             }
         }
+    }
+
+    private fun toggleAccordion(content: android.view.View, chevron: android.widget.ImageView) {
+        val expanding = content.visibility != android.view.View.VISIBLE
+        content.visibility = if (expanding) android.view.View.VISIBLE else android.view.View.GONE
+        chevron.animate().rotation(if (expanding) 180f else 0f).setDuration(200).start()
     }
 
     override fun onSupportNavigateUp(): Boolean {
