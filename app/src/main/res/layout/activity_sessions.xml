@@ -17,30 +17,70 @@
         app:titleTextColor="@color/text_primary"
         app:navigationIconTint="@color/text_primary" />
 
-    <!-- Status filter ChipGroup -->
+    <!-- API Error Banner — inline, replaces raw error text -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/errorBanner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/space_lg"
+        android:layout_marginVertical="@dimen/space_sm"
+        android:visibility="gone"
+        app:cardBackgroundColor="@color/error_surface"
+        app:cardCornerRadius="@dimen/radius_sm"
+        app:cardElevation="0dp"
+        app:strokeColor="@color/status_failed"
+        app:strokeWidth="1dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:padding="@dimen/space_md">
+
+            <TextView
+                android:id="@+id/errorBannerMessage"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Could not load sessions"
+                android:textColor="@color/text_primary"
+                android:textSize="13sp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/errorBannerRetry"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Retry"
+                android:textColor="@color/status_failed" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Status filter -->
     <HorizontalScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:scrollbars="none"
         android:paddingHorizontal="@dimen/space_lg"
-        android:paddingVertical="@dimen/space_sm">
+        android:paddingVertical="@dimen/space_sm"
+        android:scrollbars="none">
 
         <com.google.android.material.chip.ChipGroup
             android:id="@+id/statusFilterGroup"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:singleLine="true"
-            app:singleSelection="true"
+            app:chipSpacingHorizontal="@dimen/space_sm"
             app:selectionRequired="true"
-            app:chipSpacingHorizontal="@dimen/space_sm">
+            app:singleSelection="true">
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chipFilterAll"
                 style="@style/Widget.Material3.Chip.Filter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/filter_all"
-                android:checked="true" />
+                android:checked="true"
+                android:text="@string/filter_all" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chipFilterRunning"
@@ -69,7 +109,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/filter_failed" />
-
         </com.google.android.material.chip.ChipGroup>
     </HorizontalScrollView>
 
@@ -87,22 +126,19 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:padding="@dimen/space_sm"
-        android:clipToPadding="false" />
+        android:clipToPadding="false"
+        android:padding="@dimen/space_sm" />
 
-    <!-- Extended FAB for Start Session -->
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/fabStartSession"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="end|bottom"
         android:layout_margin="@dimen/space_lg"
-        android:text="@string/start_session_title"
-        app:icon="@android:drawable/ic_input_add"
-        app:iconTint="@color/white"
-        android:textColor="@color/white"
         android:backgroundTint="@color/md3_primary"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentBottom="true" />
+        android:text="@string/start_session_title"
+        android:textColor="@color/white"
+        app:icon="@android:drawable/ic_input_add"
+        app:iconTint="@color/white" />
 
 </LinearLayout>

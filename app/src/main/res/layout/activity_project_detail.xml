@@ -22,6 +22,47 @@
             app:navigationIcon="@drawable/ic_back"
             app:titleTextColor="@color/text_primary" />
 
+        <!-- API Error State (404 / 500) -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/errorStateContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="@dimen/space_lg"
+            android:layout_marginTop="@dimen/space_2xl"
+            android:visibility="gone"
+            app:cardBackgroundColor="@color/error_surface"
+            app:cardCornerRadius="@dimen/radius_md"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/status_failed"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:padding="@dimen/space_2xl">
+
+                <TextView
+                    android:id="@+id/errorStateMessage"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="Project not found or has been deleted."
+                    android:textColor="@color/text_primary"
+                    android:textSize="15sp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/retryButton"
+                    style="@style/Widget.OpenClaw.Button.Secondary"
+                    android:layout_width="wrap_content"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="@dimen/space_lg"
+                    android:text="Tap to Retry" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Project Status card -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/filesCard"
             android:layout_width="match_parent"
@@ -67,10 +108,10 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/space_xs"
+                    android:ellipsize="end"
+                    android:maxLines="3"
                     android:textColor="@color/text_secondary"
                     android:textSize="12sp"
-                    android:maxLines="3"
-                    android:ellipsize="end"
                     android:visibility="gone" />
 
                 <TextView
@@ -124,6 +165,7 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
+        <!-- Tasks card with progress indicator -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -143,8 +185,8 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical">
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
 
                     <TextView
                         style="@style/TextAppearance.OpenClaw.SectionTitle"
@@ -166,6 +208,9 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/space_sm"
+                    app:indicatorColor="@color/status_running"
+                    app:trackColor="@color/surface_container_high"
+                    app:trackCornerRadius="4dp"
                     android:visibility="gone" />
 
                 <TextView
@@ -186,6 +231,7 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
+        <!-- Files accordion (collapsed by default) -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -200,46 +246,78 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="@dimen/space_lg">
+                android:orientation="vertical">
 
-                <TextView
-                    style="@style/TextAppearance.OpenClaw.SectionTitle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Files" />
-
-                <!-- Baseline summary (Phase 9H) -->
-                <TextView
-                    android:id="@+id/baselineSummaryText"
+                <!-- Accordion header -->
+                <LinearLayout
+                    android:id="@+id/filesAccordionHeader"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/space_sm"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="13sp"
-                    android:visibility="gone" />
+                    android:background="?attr/selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/space_lg">
 
-                <TextView
-                    android:id="@+id/projectTreeSummary"
-                    style="@style/TextAppearance.OpenClaw.SectionBody"
+                    <TextView
+                        style="@style/TextAppearance.OpenClaw.SectionTitle"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Files" />
+
+                    <ImageView
+                        android:id="@+id/filesChevron"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:src="@drawable/ic_chevron_down"
+                        android:contentDescription="Expand files"
+                        app:tint="@color/text_secondary" />
+                </LinearLayout>
+
+                <!-- Accordion content -->
+                <LinearLayout
+                    android:id="@+id/filesContent"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/space_sm"
-                    android:text="Loading file tree..." />
+                    android:orientation="vertical"
+                    android:paddingStart="@dimen/space_lg"
+                    android:paddingEnd="@dimen/space_lg"
+                    android:paddingBottom="@dimen/space_lg"
+                    android:visibility="gone">
 
-                <TextView
-                    android:id="@+id/projectTreeView"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/space_md"
-                    android:background="@drawable/bg_github_result_panel"
-                    android:fontFamily="monospace"
-                    android:lineSpacingExtra="2dp"
-                    android:padding="@dimen/space_md"
-                    android:textColor="@color/text_primary"
-                    android:textIsSelectable="true"
-                    android:textSize="12sp" />
+                    <TextView
+                        android:id="@+id/baselineSummaryText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="13sp"
+                        android:visibility="gone" />
+
+                    <TextView
+                        android:id="@+id/projectTreeSummary"
+                        style="@style/TextAppearance.OpenClaw.SectionBody"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_sm"
+                        android:text="Loading file tree..." />
+
+                    <TextView
+                        android:id="@+id/projectTreeView"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_md"
+                        android:background="@drawable/bg_github_result_panel"
+                        android:fontFamily="monospace"
+                        android:lineSpacingExtra="2dp"
+                        android:padding="@dimen/space_md"
+                        android:textColor="@color/text_primary"
+                        android:textIsSelectable="true"
+                        android:textSize="12sp" />
+                </LinearLayout>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
+
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>

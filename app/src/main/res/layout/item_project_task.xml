@@ -5,66 +5,79 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="8dp"
-    app:cardCornerRadius="10dp"
-    app:cardElevation="1dp">
+    app:cardBackgroundColor="@color/surface_container"
+    app:cardCornerRadius="@dimen/card_corner_radius"
+    app:cardElevation="0dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:padding="12dp">
+        android:orientation="horizontal">
 
-        <ImageView
-            android:id="@+id/dragHandle"
-            android:layout_width="24dp"
-            android:layout_height="48dp"
-            android:layout_marginEnd="8dp"
-            android:src="@drawable/ic_drag_handle"
-            android:contentDescription="Drag to reorder"
-            android:visibility="gone" />
+        <!-- Status color strip -->
+        <View
+            android:id="@+id/taskStatusStrip"
+            android:layout_width="4dp"
+            android:layout_height="match_parent"
+            android:background="@color/status_pending" />
 
         <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical">
-
-        <TextView
-            android:id="@+id/taskTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="@color/card_text_primary"
-            android:textSize="14sp"
-            android:textStyle="bold"/>
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:padding="@dimen/space_md">
 
-        <TextView
-            android:id="@+id/taskStatus"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:textColor="@color/primary"
-            android:textSize="11sp"
-            android:textStyle="bold"/>
+            <ImageView
+                android:id="@+id/dragHandle"
+                android:layout_width="24dp"
+                android:layout_height="48dp"
+                android:layout_marginEnd="8dp"
+                android:contentDescription="Drag to reorder"
+                android:src="@drawable/ic_drag_handle"
+                android:visibility="gone" />
 
-        <TextView
-            android:id="@+id/taskMeta"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:textColor="@color/card_text_secondary"
-            android:textSize="12sp"/>
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/taskDescription"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:textColor="@color/card_text_secondary"
-            android:textSize="12sp"
-            android:maxLines="2"
-            android:ellipsize="end"/>
+                <TextView
+                    android:id="@+id/taskTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/card_text_primary"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
 
+                <TextView
+                    android:id="@+id/taskStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:textColor="@color/primary"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/taskMeta"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:textColor="@color/card_text_secondary"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/taskDescription"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:ellipsize="end"
+                    android:maxLines="2"
+                    android:textColor="@color/card_text_secondary"
+                    android:textSize="12sp" />
+            </LinearLayout>
         </LinearLayout>
     </LinearLayout>
 </androidx.cardview.widget.CardView>

@@ -5,119 +5,151 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="8dp"
-    app:cardCornerRadius="8dp"
-    app:cardElevation="2dp">
+    app:cardCornerRadius="@dimen/card_corner_radius"
+    app:cardElevation="0dp"
+    app:cardBackgroundColor="@color/surface">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:orientation="horizontal">
 
-        <!-- Task Title -->
-        <TextView
-            android:id="@+id/taskTitle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textColor="@color/text_primary"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:maxLines="2"
-            android:ellipsize="end"/>
+        <!-- Status color strip -->
+        <View
+            android:id="@+id/taskStatusStrip"
+            android:layout_width="4dp"
+            android:layout_height="match_parent"
+            android:background="@color/status_pending" />
 
-        <!-- Task Description -->
-        <TextView
-            android:id="@+id/taskDescription"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:textColor="@color/text_secondary"
-            android:textSize="14sp"
-            android:maxLines="3"
-            android:ellipsize="end"/>
-
-        <!-- Task Meta Info Row -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:orientation="horizontal">
+            android:orientation="vertical"
+            android:padding="@dimen/space_md">
+
+            <!-- Title row: name + status badge -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/taskTitle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:ellipsize="end"
+                    android:maxLines="2"
+                    android:textColor="@color/text_primary"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <com.user.ui.components.StatusBadgeView
+                    android:id="@+id/taskStatusBadge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/space_sm" />
+            </LinearLayout>
+
+            <!-- Meta row: priority + runtime -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_xs"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/taskStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/primary"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
+
+                <TextView
+                    android:id="@+id/taskTime"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <!-- Description: collapsed by default, shown via taskMeta or via adapter -->
+            <TextView
+                android:id="@+id/taskMeta"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_xs"
+                android:textColor="@color/card_text_secondary"
+                android:textSize="12sp" />
 
             <TextView
-                android:id="@+id/taskPriority"
-                android:layout_width="wrap_content"
+                android:id="@+id/taskDescription"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColor="@color/text_secondary"
-                android:textSize="12sp"/>
+                android:layout_marginTop="@dimen/space_xs"
+                android:ellipsize="end"
+                android:maxLines="2"
+                android:textColor="@color/card_text_secondary"
+                android:textSize="12sp"
+                android:visibility="gone" />
 
-            <View
-                android:layout_width="0dp"
-                android:layout_height="0dp"
-                android:layout_weight="1"/>
-
-            <TextView
-                android:id="@+id/taskTime"
-                android:layout_width="wrap_content"
+            <!-- Action: single VIEW button; APPROVE/REJECT/START shown only when relevant -->
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColor="@color/text_secondary"
-                android:textSize="12sp"/>
-        </LinearLayout>
+                android:layout_marginTop="@dimen/space_sm"
+                android:orientation="horizontal">
 
-        <!-- Task Status Badge -->
-        <com.user.ui.components.StatusBadgeView
-            android:id="@+id/taskStatusBadge"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp" />
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/approveButton"
+                    android:layout_width="0dp"
+                    android:layout_height="40dp"
+                    android:layout_marginEnd="4dp"
+                    android:layout_weight="1"
+                    android:text="APPROVE"
+                    android:textSize="12sp"
+                    android:visibility="gone"
+                    app:cornerRadius="@dimen/radius_sm" />
 
-        <!-- Action Buttons Row -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:orientation="horizontal">
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/rejectButton"
+                    android:layout_width="0dp"
+                    android:layout_height="40dp"
+                    android:layout_marginStart="4dp"
+                    android:layout_weight="1"
+                    android:text="REJECT"
+                    android:textSize="12sp"
+                    android:visibility="gone"
+                    app:backgroundTint="@color/status_failed"
+                    app:cornerRadius="@dimen/radius_sm" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/approveButton"
-                android:layout_width="0dp"
-                android:layout_height="48dp"
-                android:layout_weight="1"
-                android:text="APPROVE"
-                android:textSize="12sp"
-                android:visibility="gone"
-                android:layout_marginEnd="4dp"
-                app:cornerRadius="4dp"/>
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/startButton"
+                    android:layout_width="0dp"
+                    android:layout_height="40dp"
+                    android:layout_marginEnd="4dp"
+                    android:layout_weight="1"
+                    android:text="START"
+                    android:textSize="12sp"
+                    android:visibility="gone"
+                    app:cornerRadius="@dimen/radius_sm" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/rejectButton"
-                android:layout_width="0dp"
-                android:layout_height="48dp"
-                android:layout_weight="1"
-                android:text="REJECT"
-                android:textSize="12sp"
-                android:visibility="gone"
-                android:layout_marginStart="4dp"
-                app:cornerRadius="4dp"
-                app:backgroundTint="@color/status_failed"/>
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/startButton"
-                android:layout_width="0dp"
-                android:layout_height="48dp"
-                android:layout_weight="1"
-                android:text="START"
-                android:textSize="12sp"
-                android:visibility="gone"
-                android:layout_marginEnd="4dp"
-                app:cornerRadius="4dp"/>
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/viewButton"
-                android:layout_width="wrap_content"
-                android:layout_height="48dp"
-                android:text="VIEW"
-                android:textSize="12sp"
-                app:cornerRadius="4dp"/>
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/viewButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"
+                    android:text="VIEW"
+                    android:textSize="12sp"
+                    app:cornerRadius="@dimen/radius_sm" />
+            </LinearLayout>
         </LinearLayout>
     </LinearLayout>
 </androidx.cardview.widget.CardView>

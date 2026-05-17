@@ -17,58 +17,69 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:padding="@dimen/space_lg">
+        android:orientation="horizontal">
+
+        <!-- Status color strip — tinted by Activity/Adapter code via id statusStrip -->
+        <View
+            android:id="@+id/statusStrip"
+            android:layout_width="4dp"
+            android:layout_height="match_parent"
+            android:background="@color/status_running" />
 
         <LinearLayout
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical">
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:padding="@dimen/space_lg">
 
-            <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/sessionTitle"
-                android:layout_width="match_parent"
+            <LinearLayout
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:textColor="@color/text_primary"
-                android:textSize="15sp"
-                android:textStyle="bold" />
+                android:layout_weight="1"
+                android:orientation="vertical">
 
-            <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/sessionTime"
-                android:layout_width="match_parent"
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/sessionTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/text_primary"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/sessionTime"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_xs"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <com.user.ui.components.StatusBadgeView
+                android:id="@+id/sessionStatusBadge"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/space_xs"
-                android:textColor="@color/text_secondary"
-                android:textSize="12sp" />
+                android:layout_marginStart="@dimen/space_md" />
 
+            <ImageButton
+                android:id="@+id/pinButton"
+                android:layout_width="@dimen/touch_target_min"
+                android:layout_height="@dimen/touch_target_min"
+                android:src="@drawable/ic_star_outline"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/pin_session"
+                app:tint="@color/text_secondary" />
+
+            <ImageButton
+                android:id="@+id/deleteButton"
+                android:layout_width="@dimen/touch_target_min"
+                android:layout_height="@dimen/touch_target_min"
+                android:src="@android:drawable/ic_menu_delete"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Delete session"
+                app:tint="@color/text_secondary" />
         </LinearLayout>
-
-        <com.user.ui.components.StatusBadgeView
-            android:id="@+id/sessionStatusBadge"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/space_md" />
-
-        <ImageButton
-            android:id="@+id/pinButton"
-            android:layout_width="@dimen/touch_target_min"
-            android:layout_height="@dimen/touch_target_min"
-            android:src="@drawable/ic_star_outline"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="@string/pin_session"
-            app:tint="@color/text_secondary" />
-
-        <ImageButton
-            android:id="@+id/deleteButton"
-            android:layout_width="@dimen/touch_target_min"
-            android:layout_height="@dimen/touch_target_min"
-            android:src="@android:drawable/ic_menu_delete"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="Delete session"
-            app:tint="@color/text_secondary" />
-
     </LinearLayout>
 
 </com.google.android.material.card.MaterialCardView>

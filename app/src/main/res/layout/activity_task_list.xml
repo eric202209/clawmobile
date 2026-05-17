@@ -15,7 +15,6 @@
         android:background="@color/background"
         android:orientation="vertical">
 
-        <!-- Toolbar -->
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
@@ -23,7 +22,47 @@
             android:background="@color/toolbar_color"
             app:popupTheme="@style/ThemeOverlay.OpenClaw.PopupMenu"
             app:titleTextColor="@color/text_primary"
-            app:navigationIcon="@drawable/ic_back"/>
+            app:navigationIcon="@drawable/ic_back" />
+
+        <!-- API Error State — shown on 404/500, hidden otherwise -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/errorStateContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="@dimen/space_lg"
+            android:layout_marginTop="@dimen/space_lg"
+            android:visibility="gone"
+            app:cardBackgroundColor="@color/error_surface"
+            app:cardCornerRadius="@dimen/radius_md"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/status_failed"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:padding="@dimen/space_2xl">
+
+                <TextView
+                    android:id="@+id/errorStateMessage"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="Could not load data"
+                    android:textColor="@color/text_primary"
+                    android:textSize="15sp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/retryButton"
+                    style="@style/Widget.OpenClaw.Button.Secondary"
+                    android:layout_width="wrap_content"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="@dimen/space_lg"
+                    android:text="Tap to Retry" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
 
         <EditText
             android:id="@+id/searchInput"
@@ -158,20 +197,18 @@
                 android:orientation="vertical"
                 android:padding="@dimen/space_lg">
 
-                <!-- Row 1: Projects and Tasks -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:weightSum="2">
 
-                    <!-- Total Projects -->
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:orientation="vertical"
                         android:gravity="center"
+                        android:orientation="vertical"
                         android:paddingEnd="8dp">
 
                         <TextView
@@ -181,23 +218,22 @@
                             android:text="0"
                             android:textColor="@color/primary"
                             android:textSize="28sp"
-                            android:textStyle="bold"/>
+                            android:textStyle="bold" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Projects"
                             android:textColor="@color/card_text_secondary"
-                            android:textSize="12sp"/>
+                            android:textSize="12sp" />
                     </LinearLayout>
 
-                    <!-- Total Tasks -->
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:orientation="vertical"
                         android:gravity="center"
+                        android:orientation="vertical"
                         android:paddingStart="8dp">
 
                         <TextView
@@ -207,38 +243,35 @@
                             android:text="0"
                             android:textColor="@color/blue_500"
                             android:textSize="28sp"
-                            android:textStyle="bold"/>
+                            android:textStyle="bold" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Tasks"
                             android:textColor="@color/card_text_secondary"
-                            android:textSize="12sp"/>
+                            android:textSize="12sp" />
                     </LinearLayout>
                 </LinearLayout>
 
-                <!-- Divider -->
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
-                    android:background="@color/divider"
-                    android:layout_marginVertical="@dimen/space_md"/>
+                    android:layout_marginVertical="@dimen/space_md"
+                    android:background="@color/divider" />
 
-                <!-- Row 2: Running, Pending, Completed -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:weightSum="3">
 
-                    <!-- Running -->
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:orientation="vertical"
-                        android:gravity="center">
+                        android:gravity="center"
+                        android:orientation="vertical">
 
                         <TextView
                             android:id="@+id/runningCount"
@@ -247,23 +280,22 @@
                             android:text="0"
                             android:textColor="@color/status_running"
                             android:textSize="24sp"
-                            android:textStyle="bold"/>
+                            android:textStyle="bold" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Running"
                             android:textColor="@color/card_text_secondary"
-                            android:textSize="11sp"/>
+                            android:textSize="11sp" />
                     </LinearLayout>
 
-                    <!-- Pending -->
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:orientation="vertical"
-                        android:gravity="center">
+                        android:gravity="center"
+                        android:orientation="vertical">
 
                         <TextView
                             android:id="@+id/pendingCountNew"
@@ -272,23 +304,22 @@
                             android:text="0"
                             android:textColor="@color/status_pending"
                             android:textSize="24sp"
-                            android:textStyle="bold"/>
+                            android:textStyle="bold" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Pending"
                             android:textColor="@color/card_text_secondary"
-                            android:textSize="11sp"/>
+                            android:textSize="11sp" />
                     </LinearLayout>
 
-                    <!-- Completed -->
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:orientation="vertical"
-                        android:gravity="center">
+                        android:gravity="center"
+                        android:orientation="vertical">
 
                         <TextView
                             android:id="@+id/completedCount"
@@ -297,20 +328,20 @@
                             android:text="0"
                             android:textColor="@color/status_completed"
                             android:textSize="24sp"
-                            android:textStyle="bold"/>
+                            android:textStyle="bold" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Done"
                             android:textColor="@color/card_text_secondary"
-                            android:textSize="11sp"/>
+                            android:textSize="11sp" />
                     </LinearLayout>
                 </LinearLayout>
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- Overview Section -->
+        <!-- Sessions Overview + Status Panel -->
         <androidx.cardview.widget.CardView
             android:id="@+id/executionCard"
             android:layout_width="match_parent"
@@ -341,7 +372,7 @@
                         android:text="@string/task_hub_sessions_title"
                         android:textColor="@color/card_text_primary"
                         android:textSize="18sp"
-                        android:textStyle="bold"/>
+                        android:textStyle="bold" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/openSessionsButton"
@@ -362,7 +393,7 @@
                     android:layout_marginTop="@dimen/space_xs"
                     android:text="@string/task_hub_sessions_subtitle"
                     android:textColor="@color/card_text_secondary"
-                    android:textSize="13sp"/>
+                    android:textSize="13sp" />
 
                 <TextView
                     android:id="@+id/executionSummaryView"
@@ -371,7 +402,7 @@
                     android:layout_marginTop="@dimen/space_sm"
                     android:text="No recent execution data yet"
                     android:textColor="@color/card_text_primary"
-                    android:textSize="15sp"/>
+                    android:textSize="15sp" />
 
                 <TextView
                     android:id="@+id/recentActivityView"
@@ -382,49 +413,113 @@
                     android:maxLines="3"
                     android:text="Open a project to inspect logs, status, and task details."
                     android:textColor="@color/card_text_secondary"
-                    android:textSize="13sp"/>
+                    android:textSize="13sp" />
 
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
                     android:layout_marginTop="@dimen/space_lg"
-                    android:background="@color/divider"/>
+                    android:background="@color/divider" />
 
-                <TextView
-                    android:id="@+id/latestFailureView"
+                <!-- Latest failure — red-tinted panel -->
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/space_lg"
-                    android:background="@drawable/bg_overview_panel"
-                    android:padding="@dimen/space_md"
-                    android:text="Latest failure will appear here."
-                    android:textColor="@color/card_text_primary"
-                    android:textSize="13sp"/>
+                    android:background="@color/error_surface"
+                    android:orientation="vertical"
+                    android:padding="@dimen/space_md">
 
-                <TextView
-                    android:id="@+id/runningSessionView"
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Latest Failure"
+                        android:textColor="@color/status_failed"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.08"
+                        android:textAllCaps="true" />
+
+                    <TextView
+                        android:id="@+id/latestFailureView"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_xs"
+                        android:text="No failures recorded."
+                        android:textColor="@color/card_text_primary"
+                        android:textSize="13sp" />
+                </LinearLayout>
+
+                <!-- Running session — blue-tinted panel -->
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/space_sm"
-                    android:background="@drawable/bg_overview_panel"
-                    android:padding="@dimen/space_md"
-                    android:text="Running session will appear here."
-                    android:textColor="@color/card_text_primary"
-                    android:textSize="13sp"/>
+                    android:background="@color/primary_container"
+                    android:orientation="vertical"
+                    android:padding="@dimen/space_md">
 
-                <TextView
-                    android:id="@+id/resumableSessionView"
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Running Now"
+                        android:textColor="@color/status_running"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.08"
+                        android:textAllCaps="true" />
+
+                    <TextView
+                        android:id="@+id/runningSessionView"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_xs"
+                        android:text="No active session."
+                        android:textColor="@color/card_text_primary"
+                        android:textSize="13sp" />
+                </LinearLayout>
+
+                <!-- Resumable session — orange-tinted panel with CTA -->
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/space_sm"
-                    android:background="@drawable/bg_overview_panel"
-                    android:padding="@dimen/space_md"
-                    android:text="Resumable session will appear here."
-                    android:textColor="@color/card_text_primary"
-                    android:textSize="13sp"/>
+                    android:background="@color/warning_surface"
+                    android:orientation="vertical"
+                    android:padding="@dimen/space_md">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Resumable"
+                        android:textColor="@color/status_pending"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.08"
+                        android:textAllCaps="true" />
+
+                    <TextView
+                        android:id="@+id/resumableSessionView"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_xs"
+                        android:text="No resumable session."
+                        android:textColor="@color/card_text_primary"
+                        android:textSize="13sp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/resumeSessionButton"
+                        style="@style/Widget.OpenClaw.Button.Primary"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:layout_marginTop="@dimen/space_md"
+                        android:text="Resume Run"
+                        android:visibility="gone" />
+                </LinearLayout>
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
+        <!-- Blockers card -->
         <androidx.cardview.widget.CardView
             android:id="@+id/blockersCard"
             android:layout_width="match_parent"
@@ -448,7 +543,7 @@
                     android:text="Blockers"
                     android:textColor="@color/card_text_primary"
                     android:textSize="18sp"
-                    android:textStyle="bold"/>
+                    android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/blockerSummaryView"
@@ -457,7 +552,7 @@
                     android:layout_marginTop="@dimen/space_sm"
                     android:text="No blockers detected."
                     android:textColor="@color/card_text_primary"
-                    android:textSize="15sp"/>
+                    android:textSize="15sp" />
 
                 <TextView
                     android:id="@+id/blockerDetailsView"
@@ -468,10 +563,11 @@
                     android:maxLines="4"
                     android:text="Runs that need attention will appear here."
                     android:textColor="@color/card_text_secondary"
-                    android:textSize="13sp"/>
+                    android:textSize="13sp" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
+        <!-- Projects card -->
         <androidx.cardview.widget.CardView
             android:id="@+id/projectsCard"
             android:layout_width="match_parent"
@@ -496,7 +592,7 @@
                     android:text="@string/task_hub_projects_title"
                     android:textColor="@color/card_text_primary"
                     android:textSize="18sp"
-                    android:textStyle="bold"/>
+                    android:textStyle="bold" />
 
                 <TextView
                     android:layout_width="match_parent"
@@ -504,19 +600,17 @@
                     android:layout_marginTop="@dimen/space_xs"
                     android:text="@string/task_hub_projects_subtitle"
                     android:textColor="@color/card_text_secondary"
-                    android:textSize="13sp"/>
+                    android:textSize="13sp" />
 
-                <!-- Project List -->
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/projectsRecyclerView"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/space_sm"
-                    android:nestedScrollingEnabled="false"/>
+                    android:nestedScrollingEnabled="false" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- Orchestrator Stats / Warning Display -->
         <TextView
             android:id="@+id/orchestratorStatsView"
             android:layout_width="match_parent"
@@ -524,11 +618,11 @@
             android:layout_marginStart="@dimen/space_lg"
             android:layout_marginTop="@dimen/space_md"
             android:layout_marginEnd="@dimen/space_lg"
-            android:padding="@dimen/space_md"
-            android:textSize="14sp"
-            android:textColor="@color/white"
             android:background="@color/primary_dark"
-            android:visibility="gone"/>
+            android:padding="@dimen/space_md"
+            android:textColor="@color/white"
+            android:textSize="14sp"
+            android:visibility="gone" />
 
         <TextView
             android:id="@+id/orchestratorHelpView"
@@ -542,7 +636,7 @@
             android:text="Local browsing remains available."
             android:textColor="@color/text_secondary"
             android:textSize="13sp"
-            android:visibility="gone"/>
+            android:visibility="gone" />
 
         <LinearLayout
             android:id="@+id/tasksSectionHeader"
@@ -559,7 +653,7 @@
                 android:text="@string/task_hub_tasks_title"
                 android:textColor="@color/card_text_primary"
                 android:textSize="18sp"
-                android:textStyle="bold"/>
+                android:textStyle="bold" />
 
             <TextView
                 android:layout_width="match_parent"
@@ -567,10 +661,9 @@
                 android:layout_marginTop="@dimen/space_xs"
                 android:text="@string/task_hub_tasks_subtitle"
                 android:textColor="@color/card_text_secondary"
-                android:textSize="13sp"/>
+                android:textSize="13sp" />
         </LinearLayout>
 
-        <!-- Empty State -->
         <TextView
             android:id="@+id/emptyView"
             android:layout_width="match_parent"
@@ -584,9 +677,8 @@
             android:text="No tasks available"
             android:textColor="@color/text_secondary"
             android:textSize="16sp"
-            android:visibility="gone"/>
+            android:visibility="gone" />
 
-        <!-- Sequence indicator -->
         <TextView
             android:id="@+id/sequenceIndicator"
             android:layout_width="match_parent"
@@ -594,18 +686,17 @@
             android:layout_marginStart="@dimen/space_lg"
             android:layout_marginEnd="@dimen/space_lg"
             android:layout_marginTop="@dimen/space_sm"
+            android:gravity="end"
             android:textColor="@color/text_secondary"
             android:textSize="12sp"
-            android:gravity="end"
             android:visibility="gone" />
 
-        <!-- Task List RecyclerView -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:nestedScrollingEnabled="false"
-            android:visibility="gone"/>
+            android:visibility="gone" />
 
     </LinearLayout>
 
