@@ -496,8 +496,9 @@ class TaskDetailActivity : AppCompatActivity() {
 
         when (status) {
             TaskStatus.PENDING -> {
-                approveBtn.visibility = if (sessionId.isBlank()) android.view.View.GONE else android.view.View.VISIBLE
-                rejectBtn.visibility = if (sessionId.isBlank()) android.view.View.GONE else android.view.View.VISIBLE
+                val canAct = orchestratorClient != null || sessionId.isNotBlank()
+                approveBtn.visibility = if (canAct) android.view.View.VISIBLE else android.view.View.GONE
+                rejectBtn.visibility = if (canAct) android.view.View.VISIBLE else android.view.View.GONE
                 startBtn.visibility = android.view.View.GONE
                 approveBtn.setOnClickListener { viewModel.approveTask(currentTask?.taskId ?: "") }
                 rejectBtn.setOnClickListener {
@@ -512,9 +513,10 @@ class TaskDetailActivity : AppCompatActivity() {
                 }
             }
             TaskStatus.APPROVED -> {
+                val canAct = orchestratorClient != null || sessionId.isNotBlank()
                 approveBtn.visibility = android.view.View.GONE
                 rejectBtn.visibility = android.view.View.GONE
-                startBtn.visibility = if (sessionId.isBlank()) android.view.View.GONE else android.view.View.VISIBLE
+                startBtn.visibility = if (canAct) android.view.View.VISIBLE else android.view.View.GONE
                 startBtn.setOnClickListener { viewModel.startTask(currentTask?.taskId ?: "") }
             }
             TaskStatus.IN_PROGRESS -> {

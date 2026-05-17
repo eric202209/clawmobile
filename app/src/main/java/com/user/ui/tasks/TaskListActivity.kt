@@ -85,6 +85,8 @@ class TaskListActivity : AppCompatActivity() {
     private var latestSessions: List<MobileSessionListItem> = emptyList()
     private var currentTaskFilterMode: TaskFilterMode = TaskFilterMode.ALL
     private var latestDiagnosticsSnapshot: DiagnosticsSnapshot? = null
+    private val allProjectTasks = mutableMapOf<String, Pair<String, List<OrchestTask>>>()
+    private var groupedTaskAdapter: GroupedTaskAdapter? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -184,6 +186,12 @@ class TaskListActivity : AppCompatActivity() {
             onStartClick = { task -> startTask(task) },
             onViewClick = { task -> viewTaskDetails(task) },
             onLongPress = { task ->
+                CommandAssist.showTaskActions(this, task.taskId, task.title)
+            }
+        )
+        groupedTaskAdapter = GroupedTaskAdapter(
+            onTaskClick = { task -> viewOrchestTaskDetails(task) },
+            onTaskLongPress = { task ->
                 CommandAssist.showTaskActions(this, task.taskId, task.title)
             }
         )
@@ -424,6 +432,11 @@ class TaskListActivity : AppCompatActivity() {
                         projectProgressAdapter.updateProjectStats(projectId, statsData)
                         renderOverviewDetails()
                     }
+                }
+
+                orchestratorApiClient?.getProjectTasks(projectId)?.onSuccess { tasks ->
+                    allProjectTasks[projectId] = Pair(project.name, tasks)
+                    buildGroupedList()
                 }
             }
         }
@@ -771,6 +784,23 @@ class TaskListActivity : AppCompatActivity() {
     private fun applyVisibleFilters() {
         val query = binding.searchInput.text?.toString()?.trim()?.lowercase().orEmpty()
 
+        val visibleProjects = if (query.isBlank()) {
+            latestProjects
+        } else {
+            latestProjects.filter { project ->
+                project.name.lowercase().contains(query) ||
+                        (project.description?.lowercase()?.contains(query) == true) ||
+                        project.getProjectId().lowercase().contains(query)
+            }
+        }
+        projectProgressAdapter.submitList(visibleProjects)
+        renderOverviewDetails()
+
+        if (allProjectTasks.isNotEmpty()) {
+            buildGroupedList()
+            return
+        }
+
         val tasksForMode = when (currentTaskFilterMode) {
             TaskFilterMode.ALL -> latestTasks
             TaskFilterMode.PENDING -> latestTasks.filter { it.status == TaskStatus.PENDING }
@@ -795,18 +825,6 @@ class TaskListActivity : AppCompatActivity() {
         submitTasks(visibleTasks)
         updateEmptyState(visibleTasks)
         updateSequenceIndicator(visibleTasks.size, latestTasks.size)
-
-        val visibleProjects = if (query.isBlank()) {
-            latestProjects
-        } else {
-            latestProjects.filter { project ->
-                project.name.lowercase().contains(query) ||
-                        (project.description?.lowercase()?.contains(query) == true) ||
-                        project.getProjectId().lowercase().contains(query)
-            }
-        }
-        projectProgressAdapter.submitList(visibleProjects)
-        renderOverviewDetails()
     }
 
     private fun sortProjectsForDisplay(projects: List<Project>): List<Project> {
@@ -814,6 +832,59 @@ class TaskListActivity : AppCompatActivity() {
             compareByDescending<Project> { prefsManager.isProjectPinned(it.getProjectId()) }
                 .thenBy { it.name.lowercase() }
         )
+    }
+
+    private fun buildGroupedList() {
+        val adapter = groupedTaskAdapter ?: return
+        val query = binding.searchInput.text?.toString()?.trim()?.lowercase().orEmpty()
+        val items = mutableListOf<GroupedTaskAdapter.ListItem>()
+
+        for (project in latestProjects) {
+            val projectId = project.getProjectId()
+            val (_, tasks) = allProjectTasks[projectId] ?: continue
+
+            val filtered = tasks.filter { task ->
+                val status = resolveOrchestTaskStatus(task)
+                val matchesFilter = when (currentTaskFilterMode) {
+                    TaskFilterMode.ALL -> true
+                    TaskFilterMode.PENDING -> status == "pending"
+                    TaskFilterMode.ACTIVE -> status in setOf("in_progress", "running", "executing", "approved")
+                    TaskFilterMode.DONE -> status in setOf("completed", "done", "success")
+                    TaskFilterMode.FAILED -> status in setOf("failed", "timeout", "rejected")
+                }
+                val matchesQuery = query.isBlank() ||
+                        task.title.lowercase().contains(query) ||
+                        task.description?.lowercase()?.contains(query) == true
+                matchesFilter && matchesQuery
+            }
+
+            if (filtered.isNotEmpty()) {
+                items.add(GroupedTaskAdapter.ListItem.Header(projectId, project.name, filtered.size))
+                filtered.forEach { items.add(GroupedTaskAdapter.ListItem.Task(it)) }
+            }
+        }
+
+        if (binding.recyclerView.adapter !== adapter) {
+            binding.recyclerView.adapter = adapter
+        }
+        adapter.submitList(items)
+
+        val hasTasks = items.isNotEmpty()
+        binding.emptyView.visibility = if (hasTasks) View.GONE else View.VISIBLE
+        binding.recyclerView.visibility = View.VISIBLE
+        binding.sequenceIndicator.visibility = View.GONE
+    }
+
+    private fun resolveOrchestTaskStatus(task: OrchestTask) = when {
+        task.status == "unknown" && task.hasActiveSession -> "running"
+        task.status == "unknown" -> task.sessionStatus?.lowercase() ?: "pending"
+        else -> task.status.lowercase()
+    }
+
+    private fun viewOrchestTaskDetails(task: OrchestTask) {
+        startActivity(Intent(this, TaskDetailActivity::class.java).apply {
+            putExtra("task_id", task.taskId)
+        })
     }
 
     private fun approveTask(task: Task) {

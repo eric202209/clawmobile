@@ -177,7 +177,11 @@ class SessionDetailActivity : AppCompatActivity() {
                 bindCheckpoints(checkpoints)
                 renderRecoveryCard()
             }.onFailure { error ->
-                binding.checkpointSummaryView.text = error.message ?: "Unable to load checkpoints."
+                val is404 = error.message?.contains("404") == true
+                binding.checkpointSummaryView.text = if (is404)
+                    "No checkpoints yet for this session"
+                else
+                    error.message ?: "Unable to load checkpoints."
                 binding.checkpointListView.text = ""
                 latestCheckpoints = null
                 renderRecoveryCard()
