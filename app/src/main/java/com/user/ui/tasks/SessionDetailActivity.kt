@@ -258,41 +258,43 @@ class SessionDetailActivity : AppCompatActivity() {
     }
 
     private fun bindCheckpoints(checkpoints: MobileCheckpointListResponse) {
-        val bestCheckpoint = checkpoints.checkpoints.lastOrNull()
+        val resumableList = checkpoints.checkpoints.filter { it.resumable }.asReversed()
+        val inspectList = checkpoints.checkpoints.filter { !it.resumable }.asReversed()
+        val bestCheckpoint = resumableList.firstOrNull() ?: checkpoints.checkpoints.lastOrNull()
+        val resumableCount = resumableList.size
 
-        binding.checkpointSummaryView.text = if (checkpoints.totalCount > 0) {
-            "${checkpoints.totalCount} available"
-        } else {
-            "None yet"
+        binding.checkpointSummaryView.text = when {
+            resumableCount > 0 && inspectList.isNotEmpty() ->
+                "$resumableCount resumable • ${inspectList.size} inspection only"
+            resumableCount > 0 -> "$resumableCount resumable"
+            inspectList.isNotEmpty() -> "${inspectList.size} inspection only"
+            else -> "None yet"
         }
-        val checkpointLines = checkpoints.checkpoints
-            .asReversed()
-            .mapIndexed { index, checkpoint ->
-                val stepSuffix = checkpoint.stepIndex?.let { " • step $it" } ?: ""
-                val typeSuffix = checkpoint.checkpointType?.takeIf { it.isNotBlank() }?.let {
-                    " • $it"
-                } ?: ""
-                val completedSuffix = if (checkpoint.completedSteps > 0) {
-                    " • ${checkpoint.completedSteps} completed"
-                } else {
-                    ""
-                }
-                val createdSuffix = checkpoint.createdAt
-                    ?.let(TimeFormatUtils::formatApiTimestamp)
-                    ?.let { " • $it" }
-                    .orEmpty()
-                val descriptionSuffix = checkpoint.description?.takeIf { it.isNotBlank() }?.let {
-                    " • $it"
-                } ?: ""
-                val resumableSuffix = if (checkpoint.resumable) "" else " • inspect"
-                val bestPrefix = if (checkpoint.name == bestCheckpoint?.name) "Best: " else ""
-                "${index + 1}. $bestPrefix${checkpoint.name}$typeSuffix$stepSuffix$completedSuffix$descriptionSuffix$resumableSuffix$createdSuffix"
-            }
 
-        binding.checkpointListView.text = if (checkpointLines.isEmpty()) {
+        fun formatCheckpoint(index: Int, checkpoint: com.user.data.MobileCheckpoint): String {
+            val stepSuffix = checkpoint.stepIndex?.let { " • step $it" } ?: ""
+            val typeSuffix = checkpoint.checkpointType?.takeIf { it.isNotBlank() }?.let { " • $it" } ?: ""
+            val completedSuffix = if (checkpoint.completedSteps > 0) " • ${checkpoint.completedSteps} completed" else ""
+            val createdSuffix = checkpoint.createdAt?.let(TimeFormatUtils::formatApiTimestamp)?.let { " • $it" }.orEmpty()
+            val descriptionSuffix = checkpoint.description?.takeIf { it.isNotBlank() }?.let { " • $it" } ?: ""
+            val resumableSuffix = if (checkpoint.resumable) "" else " • inspect"
+            val bestPrefix = if (checkpoint.name == bestCheckpoint?.name) "Best: " else ""
+            return "${index + 1}. $bestPrefix${checkpoint.name}$typeSuffix$stepSuffix$completedSuffix$descriptionSuffix$resumableSuffix$createdSuffix"
+        }
+
+        val resumableLines = resumableList.mapIndexed { i, cp -> formatCheckpoint(i + 1, cp) }
+        val inspectLines = inspectList.mapIndexed { i, cp -> formatCheckpoint(resumableList.size + i + 1, cp) }
+
+        val allLines = buildList {
+            addAll(resumableLines)
+            if (inspectLines.isNotEmpty() && resumableLines.isNotEmpty()) add("— Inspection only —")
+            addAll(inspectLines)
+        }
+
+        binding.checkpointListView.text = if (allLines.isEmpty()) {
             "No checkpoints are available for this session yet."
         } else {
-            checkpointLines.joinToString("\n")
+            allLines.joinToString("\n")
         }
         binding.checkpointListView.visibility = View.VISIBLE
         binding.checkpointsContent.visibility =
@@ -305,9 +307,9 @@ class SessionDetailActivity : AppCompatActivity() {
             binding.recoveryCard.visibility = View.GONE
             return
         }
-        val checkpointCount = latestCheckpoints?.totalCount ?: 0
+        val resumableCount = latestCheckpoints?.checkpoints?.count { it.resumable } ?: 0
         val status = summary.status.lowercase()
-        val resumable = status == "paused" || (status == "stopped" && checkpointCount > 0)
+        val resumable = status == "paused" || (status == "stopped" && resumableCount > 0)
 
         when {
             resumable -> {
@@ -315,8 +317,8 @@ class SessionDetailActivity : AppCompatActivity() {
                 binding.recoveryTitle.text = getString(R.string.recovery_resume_title)
                 binding.recoverySummary.text = resources.getQuantityString(
                     R.plurals.session_recovery_resume_message,
-                    checkpointCount,
-                    checkpointCount
+                    resumableCount,
+                    resumableCount
                 )
             }
             status == "running" -> {
