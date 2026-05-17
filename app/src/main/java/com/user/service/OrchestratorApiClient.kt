@@ -126,12 +126,15 @@ class OrchestratorApiClient(
         return Result.failure(Exception(fullMessage, exception))
     }
 
-    private fun getHeaders(): Map<String, String> {
-        return mapOf(
+    private fun getHeaders(includeGatewayAuthorization: Boolean = false): Map<String, String> {
+        val headers = mutableMapOf(
             "Content-Type" to "application/json",
-            "X-OpenClaw-API-Key" to (overrideApiKey ?: prefs.orchestratorApiKey),
-            "Authorization" to "Bearer $gatewayToken"
+            "X-OpenClaw-API-Key" to (overrideApiKey ?: prefs.orchestratorApiKey)
         )
+        if (includeGatewayAuthorization && gatewayToken.isNotBlank()) {
+            headers["Authorization"] = "Bearer $gatewayToken"
+        }
+        return headers
     }
 
     /**
@@ -448,7 +451,7 @@ class OrchestratorApiClient(
 
             val request = Request.Builder()
                 .url(url)
-                .headers(okhttp3.Headers.headersOf(*buildHeadersArray()))
+                .headers(okhttp3.Headers.headersOf(*buildHeadersArray(includeGatewayAuthorization = false)))
                 .get()
                 .build()
 
@@ -458,7 +461,7 @@ class OrchestratorApiClient(
                     Log.d(TAG, "Mobile checkpoints endpoint missing for $sessionId; trying: $fallbackUrl")
                     val fallbackRequest = Request.Builder()
                         .url(fallbackUrl)
-                        .headers(okhttp3.Headers.headersOf(*buildHeadersArray()))
+                        .headers(okhttp3.Headers.headersOf(*buildHeadersArray(includeGatewayAuthorization = false)))
                         .get()
                         .build()
 
@@ -558,11 +561,31 @@ class OrchestratorApiClient(
 
             val request = Request.Builder()
                 .url(url)
-                .headers(okhttp3.Headers.headersOf(*buildHeadersArray()))
+                .headers(okhttp3.Headers.headersOf(*buildHeadersArray(includeGatewayAuthorization = false)))
                 .post(okhttp3.RequestBody.create(null, ByteArray(0)))
                 .build()
 
             client.newCall(request).execute().use { response ->
+                if (response.code == 404) {
+                    val fallbackUrl = buildApiUrl("tasks/${taskId}/retry")
+                    Log.d(TAG, "Mobile retry endpoint missing for task $taskId; trying: $fallbackUrl")
+                    val fallbackRequest = Request.Builder()
+                        .url(fallbackUrl)
+                        .headers(okhttp3.Headers.headersOf(*buildHeadersArray(includeGatewayAuthorization = false)))
+                        .post(okhttp3.RequestBody.create(null, ByteArray(0)))
+                        .build()
+
+                    client.newCall(fallbackRequest).execute().use { fallbackResponse ->
+                        if (!fallbackResponse.isSuccessful) {
+                            return@withContext buildFailure(
+                                "Retry task API failed for $taskId (${fallbackResponse.code} ${fallbackResponse.message})."
+                            )
+                        }
+
+                        val fallbackBody = fallbackResponse.body?.string() ?: throw Exception("Empty response")
+                        return@withContext Result.success(gson.fromJson(fallbackBody, MobileTaskActionResponse::class.java))
+                    }
+                }
                 if (!response.isSuccessful) {
                     return@withContext buildFailure(
                         "Retry task API failed for $taskId (${response.code} ${response.message})."
@@ -1016,8 +1039,8 @@ class OrchestratorApiClient(
         }
     }
 
-    private fun buildHeadersArray(): Array<String> {
-        val headers = getHeaders()
+    private fun buildHeadersArray(includeGatewayAuthorization: Boolean = false): Array<String> {
+        val headers = getHeaders(includeGatewayAuthorization)
         return headers.flatMap { (key, value) -> listOf(key, value) }.toTypedArray()
     }
 
