@@ -56,9 +56,15 @@ jobs:
       - name: Run connected instrumentation tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 30
+          api-level: 34
           target: google_apis
           arch: x86_64
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -camera-back none
           disable-animations: true
-          script: ./gradlew connectedDebugAndroidTest
+          script: |
+            adb wait-for-device
+            adb shell 'while [ "$(getprop sys.boot_completed)" != "1" ]; do sleep 2; done'
+            adb shell 'while [ -z "$(getprop ro.build.version.sdk)" ]; do sleep 2; done'
+            adb devices -l
+            adb shell getprop ro.build.version.sdk
+            ./gradlew connectedDebugAndroidTest
