@@ -68,6 +68,11 @@ android {
         viewBinding = true
         buildConfig = true
     }
+
+}
+
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
 }
 
 dependencies {
@@ -103,9 +108,14 @@ dependencies {
     implementation(libs.bouncycastle)
     implementation(libs.work.runtime.ktx)
     implementation(libs.work.runtime)
+    implementation(libs.datastore.preferences)
 
     testImplementation(libs.junit)
+    testImplementation(libs.coroutines.test)
+    testImplementation(libs.mockwebserver)
     androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.test.core)
+    androidTestImplementation(libs.coroutines.test)
     androidTestImplementation(libs.espresso)
 }
 

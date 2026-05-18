@@ -30,6 +30,11 @@
         app:showAsAction="never" />
 
     <item
+        android:id="@+id/action_about"
+        android:title="@string/main_menu_about"
+        app:showAsAction="never" />
+
+    <item
         android:id="@+id/action_help"
         android:title="@string/main_menu_guide"
         app:showAsAction="never" />

@@ -2,6 +2,7 @@ package com.user.service
 
 import com.user.data.ChatDao
 import com.user.data.ChatMessage
+import com.user.data.AppPreferences
 import com.user.data.PrefsManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -63,7 +64,8 @@ data class SendMessageResponse(
 
 class OpenClawService(
     private val chatDao: ChatDao,
-    private val prefs: PrefsManager
+    private val prefs: PrefsManager,
+    private val appPreferences: AppPreferences? = null
 ) {
     private val client = OkHttpClient.Builder()
         .addInterceptor(HttpLoggingInterceptor().apply {
@@ -73,8 +75,8 @@ class OpenClawService(
         .readTimeout(60, TimeUnit.SECONDS)
         .build()
 
-    private fun getApi(): OpenClawApi {
-        val baseUrl = prefs.serverUrl
+    private suspend fun getApi(): OpenClawApi {
+        val baseUrl = appPreferences?.getBaseUrl() ?: prefs.serverUrl
         val retrofit = Retrofit.Builder()
             .baseUrl(if (baseUrl.endsWith("/")) baseUrl else "$baseUrl/")
             .client(client)
