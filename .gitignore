@@ -1,6 +1,7 @@
 # Android Studio
 build/
 .gradle/
+.kotlin/
 local.properties
 
 # Detects file system changes for Jest

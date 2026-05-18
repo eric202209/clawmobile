@@ -38,6 +38,7 @@ import com.user.service.AgentInfo
 import com.user.ui.ChatAdapter
 import com.user.ui.tasks.TaskListActivity
 import com.user.ui.tools.GitHubActivity
+import com.user.util.UiState
 import com.user.viewmodel.ChatViewModel
 
 /**
@@ -199,6 +200,37 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
             viewModel.clearToast()
         }
+        viewModel.isOnline.observe(this) { online ->
+            if (online) {
+                binding.offlineBanner.hide()
+            } else {
+                binding.offlineBanner.showWithTimestamp(null)
+            }
+        }
+        viewModel.uiState.observe(this) { state ->
+            when (state) {
+                is UiState.Error -> {
+                    binding.alertsText.text = state.message
+                    binding.cardAlerts.visibility = View.VISIBLE
+                    binding.errorRetryButton.visibility =
+                        if (state.retryable) View.VISIBLE else View.GONE
+                    binding.emptyStateText.visibility = View.GONE
+                }
+                is UiState.Success -> {
+                    binding.cardAlerts.visibility = View.GONE
+                    binding.errorRetryButton.visibility = View.GONE
+                    binding.emptyStateText.visibility =
+                        if (state.data.isEmpty()) View.VISIBLE else View.GONE
+                }
+                UiState.Loading -> {
+                    binding.cardAlerts.visibility = View.GONE
+                    binding.errorRetryButton.visibility = View.GONE
+                    binding.emptyStateText.visibility = View.GONE
+                }
+            }
+        }
+        binding.offlineBanner.retryAction = { viewModel.connect() }
+        binding.errorRetryButton.setOnClickListener { viewModel.connect() }
     }
 
     private fun setupInputHandlers() {
@@ -599,6 +631,10 @@ class MainActivity : AppCompatActivity() {
             }
             R.id.action_settings -> {
                 startActivity(Intent(this, SettingsActivity::class.java))
+                true
+            }
+            R.id.action_about -> {
+                startActivity(Intent(this, AboutActivity::class.java))
                 true
             }
             R.id.action_help -> {

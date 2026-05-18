@@ -21,9 +21,13 @@ import com.user.service.Ed25519Manager
 import com.user.service.GatewayClient
 import com.user.service.GatewayConnectionService
 import com.user.service.GatewayEvent
+import com.user.service.NetworkMonitor
+import com.user.util.ChatErrorMapper
+import com.user.util.UiState
 import com.tom_roush.pdfbox.pdmodel.PDDocument
 import com.tom_roush.pdfbox.text.PDFTextStripper
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.nio.charset.StandardCharsets
@@ -46,7 +50,9 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
     )
 
     private val ed25519 = Ed25519Manager(application)
-    private val gateway = GatewayClient(prefs.serverUrl, prefs.gatewayToken, ed25519)
+    private val networkMonitor = NetworkMonitor(application)
+    private var gateway: GatewayClient? = null
+    private var gatewayEventsJob: Job? = null
 
     // ── LiveData ──────────────────────────────────────────────
     private val _messages = MutableLiveData<List<ChatMessage>>()
@@ -70,10 +76,16 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
     private val _toast = MutableLiveData<String?>(null)
     val toast: LiveData<String?> get() = _toast
 
+    private val _uiState = MutableLiveData<UiState<List<ChatMessage>>>(UiState.Loading)
+    val uiState: LiveData<UiState<List<ChatMessage>>> get() = _uiState
+
+    private val _isOnline = MutableLiveData(true)
+    val isOnline: LiveData<Boolean> get() = _isOnline
+
     private val _currentSessionId = MutableLiveData<String>()
 
     init {
-        observeGatewayEvents()
+        observeNetwork()
     }
 
     fun loadSession(sessionId: String) {
@@ -81,6 +93,7 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             repository.getMessages(sessionId).collectLatest {
                 _messages.postValue(it)
+                _uiState.postValue(UiState.Success(it))
             }
         }
     }
@@ -92,6 +105,7 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
             repository.insertSession(ChatSession(sessionId = sessionId, title = "New Chat"))
             repository.getMessages(sessionId).collectLatest {
                 _messages.postValue(it)
+                _uiState.postValue(UiState.Success(it))
             }
         }
     }
@@ -107,9 +121,38 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
         context.stopService(intent)
     }
 
-    private fun observeGatewayEvents() {
+    private fun observeNetwork() {
         viewModelScope.launch {
-            gateway.events.collect { event ->
+            networkMonitor.isOnline.collect { online ->
+                _isOnline.postValue(online)
+                if (!online) {
+                    _uiState.postValue(ChatErrorMapper.offline())
+                }
+            }
+        }
+    }
+
+    private fun ensureGateway(): GatewayClient {
+        val current = gateway
+        if (current != null) return current
+
+        return GatewayClient(prefs.serverUrl, prefs.gatewayToken, ed25519).also { freshGateway ->
+            gateway = freshGateway
+            observeGatewayEvents(freshGateway)
+        }
+    }
+
+    private fun resetGateway() {
+        gateway?.disconnect()
+        gatewayEventsJob?.cancel()
+        gatewayEventsJob = null
+        gateway = null
+    }
+
+    private fun observeGatewayEvents(gatewayClient: GatewayClient) {
+        gatewayEventsJob?.cancel()
+        gatewayEventsJob = viewModelScope.launch {
+            gatewayClient.events.collect { event ->
                 when (event) {
                     is GatewayEvent.Connecting -> _status.postValue("○ Connecting…")
                     is GatewayEvent.HandshakeStarted -> _status.postValue("○ Handshaking…")
@@ -131,6 +174,11 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
                     }
                     is GatewayEvent.Error -> {
                         _status.postValue("✕ Error: ${event.message}")
+                        _uiState.postValue(ChatErrorMapper.requestFailure(event.message))
+                    }
+                    is GatewayEvent.AuthError -> {
+                        _status.postValue("✕ Auth Error")
+                        _uiState.postValue(UiState.Error(event.message, retryable = false))
                     }
                     else -> {}
                 }
@@ -155,6 +203,10 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
     fun sendMessage(text: String) {
         val sessionId = _currentSessionId.value ?: return
         if (text.isBlank()) return
+        if (_isOnline.value == false) {
+            _uiState.value = ChatErrorMapper.offline()
+            return
+        }
 
         viewModelScope.launch {
             val message = ChatMessage(
@@ -168,9 +220,11 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
 
             _isSending.postValue(true)
             try {
-                gateway.sendMessage(text)
+                ensureGateway().sendMessage(text)
             } catch (e: Exception) {
-                _toast.postValue("Failed to send: ${e.message}")
+                val messageText = "Failed to send: ${e.message}"
+                _toast.postValue(messageText)
+                _uiState.postValue(ChatErrorMapper.requestFailure(messageText))
             } finally {
                 _isSending.postValue(false)
             }
@@ -185,6 +239,10 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
      */
     fun sendFile(context: Context, uri: Uri, text: String) {
         val sessionId = _currentSessionId.value ?: return
+        if (_isOnline.value == false) {
+            _uiState.value = ChatErrorMapper.offline()
+            return
+        }
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val contentResolver = context.contentResolver
@@ -209,7 +267,7 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
                         imageBase64 = base64
                     )
                     repository.insertMessage(message)
-                    gateway.sendMessage(text, base64, mimeType)
+                    ensureGateway().sendMessage(text, base64, mimeType)
                 } else {
                     val finalMessage = when {
                         isPdfFile(mimeType, lowerFileName) -> {
@@ -245,10 +303,12 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
                         timestamp = System.currentTimeMillis()
                     )
                     repository.insertMessage(message)
-                    gateway.sendMessage(finalMessage)
+                    ensureGateway().sendMessage(finalMessage)
                 }
             } catch (e: Exception) {
-                _toast.postValue("Failed to attach file: ${e.message}")
+                val messageText = "Failed to attach file: ${e.message}"
+                _toast.postValue(messageText)
+                _uiState.postValue(ChatErrorMapper.requestFailure(messageText))
             } finally {
                 _isSending.postValue(false)
             }
@@ -346,7 +406,7 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun switchAgent(agentId: String) {
-        gateway.switchAgent(agentId)
+        ensureGateway().switchAgent(agentId)
     }
 
     fun clearPairingDialog() {
@@ -358,13 +418,19 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun connect() {
+        if (_isOnline.value == false) {
+            _uiState.value = ChatErrorMapper.offline()
+            _status.value = "✕ Offline"
+            return
+        }
+        resetGateway()
         viewModelScope.launch(Dispatchers.IO) {
-            gateway.connect()
+            ensureGateway().connect()
         }
     }
 
     fun disconnect() {
-        gateway.disconnect()
+        gateway?.disconnect()
     }
 }
 

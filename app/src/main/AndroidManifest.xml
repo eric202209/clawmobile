@@ -33,6 +33,8 @@
         <activity android:name=".ui.activities.OnboardingActivity" android:exported="false" />
         <activity android:name=".ui.activities.ChatHistoryActivity" android:exported="false" />
         <activity android:name=".ui.activities.SettingsActivity" android:exported="false" />
+        <activity android:name=".ui.activities.AboutActivity" android:exported="false" />
+        <activity android:name=".ui.activities.DiagnosticsActivity" android:exported="false" />
         <activity android:name=".ui.activities.SessionsActivity" android:exported="false" />
         <activity android:name=".ui.tasks.TaskListActivity" android:exported="false" />
         <activity android:name=".ui.tasks.ProjectDetailActivity" android:exported="false" />

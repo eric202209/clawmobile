@@ -1,6 +1,8 @@
 package com.user
 
 import android.app.Application
+import android.os.Build
+import android.os.StrictMode
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
@@ -16,9 +18,27 @@ class ClawMobileApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        enableDebugStrictMode()
         PDFBoxResourceLoader.init(this)
         schedulePermissionPolling()
         scheduleInterventionPolling()
+    }
+
+    private fun enableDebugStrictMode() {
+        if (!BuildConfig.DEBUG) return
+        StrictMode.setThreadPolicy(
+            StrictMode.ThreadPolicy.Builder()
+                .detectAll()
+                .penaltyLog()
+                .build()
+        )
+        val vmPolicyBuilder = StrictMode.VmPolicy.Builder()
+            .detectLeakedSqlLiteObjects()
+            .penaltyLog()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            vmPolicyBuilder.detectCredentialProtectedWhileLocked()
+        }
+        StrictMode.setVmPolicy(vmPolicyBuilder.build())
     }
 
     private fun scheduleInterventionPolling() {

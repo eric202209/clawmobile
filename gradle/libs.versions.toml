@@ -19,6 +19,8 @@ livedata = "2.6.2"
 remote-creation-compose = "1.0.0-alpha06"
 core-splashscreen = "1.2.0"
 work = "2.9.1"
+datastore = "1.1.1"
+androidx-test-core = "1.5.0"
 
 [libraries]
 core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core-ktx" }
@@ -44,7 +46,10 @@ bouncycastle = { group = "org.bouncycastle", name = "bcprov-jdk18on", version.re
 
 junit = { group = "junit", name = "junit", version = "4.13.2" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version = "1.1.5" }
+androidx-test-core = { group = "androidx.test", name = "core", version.ref = "androidx-test-core" }
 espresso = { group = "androidx.test.espresso", name = "espresso-core", version = "3.5.1" }
+coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutines" }
+mockwebserver = { group = "com.squareup.okhttp3", name = "mockwebserver", version.ref = "okhttp" }
 
 lifecycle-livedata = { group = "androidx.lifecycle", name = "lifecycle-livedata-ktx", version.ref = "livedata" }
 activity-ktx = { group = "androidx.activity", name = "activity-ktx", version.ref = "activity" }
@@ -52,6 +57,7 @@ androidx-remote-creation-compose = { group = "androidx.compose.remote", name = "
 androidx-core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "core-splashscreen" }
 work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "work" }
 work-runtime = { group = "androidx.work", name = "work-runtime", version.ref = "work" }
+datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastore" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

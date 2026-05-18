@@ -9,10 +9,15 @@ import androidx.core.content.ContextCompat
 import com.user.ClawMobileApplication
 import com.user.BuildConfig
 import com.user.R
+import com.user.data.AppPreferences
+import com.user.data.BackendSettings
 import com.user.data.GitConnection
 import com.user.data.PrefsManager
 import com.user.databinding.ActivitySettingsBinding
+import com.user.service.GatewayHealthChecker
 import com.user.service.OrchestratorApiClient
+import com.user.util.GatewaySettingsValidator
+import com.user.util.ValidationResult
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -47,6 +52,8 @@ class SettingsActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySettingsBinding
     private lateinit var prefs: PrefsManager
+    private lateinit var appPreferences: AppPreferences
+    private val gatewayHealthChecker = GatewayHealthChecker()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,9 +65,14 @@ class SettingsActivity : AppCompatActivity() {
         title = getString(com.user.R.string.main_menu_settings)
 
         prefs = PrefsManager(this)
+        appPreferences = AppPreferences(this)
 
         // Load existing values or use defaults from local.properties (BuildConfig)
-        binding.serverUrlInput.setText(prefs.serverUrl)
+        val gatewaySettings = AppPreferences.parseUrl(prefs.serverUrl)
+        binding.gatewayHostInput.setText(gatewaySettings.host)
+        binding.gatewayPortInput.setText(gatewaySettings.port.toString())
+        binding.useHttpsSwitch.isChecked = gatewaySettings.useHttps
+        binding.serverUrlInput.setText(gatewaySettings.baseUrl)
 
         // Pre-fill gateway token from BuildConfig if not already saved
         val savedGatewayToken = prefs.gatewayToken
@@ -94,6 +106,9 @@ class SettingsActivity : AppCompatActivity() {
         binding.orchestratorTestButton.setOnClickListener {
             testOrchestratorConnection()
         }
+        binding.gatewayTestButton.setOnClickListener {
+            testGatewayConnection()
+        }
 
         // Auto-test connection when URL field loses focus (T021)
         binding.orchestratorServerUrlInput.setOnFocusChangeListener { _, hasFocus ->
@@ -103,7 +118,8 @@ class SettingsActivity : AppCompatActivity() {
         }
 
         binding.saveButton.setOnClickListener {
-            val serverUrl   = binding.serverUrlInput.text.toString().trim()
+            val backendSettings = readGatewaySettings() ?: return@setOnClickListener
+            val serverUrl = backendSettings.baseUrl
             val gatewayToken = binding.gatewayTokenInput.text.toString().trim()
             val githubToken = binding.githubTokenInput.text.toString().trim()
             val githubApiUrl = binding.githubApiUrlInput.text.toString().trim()
@@ -129,6 +145,9 @@ class SettingsActivity : AppCompatActivity() {
                 else -> {
                     prefs.serverUrl = serverUrl
                     prefs.gatewayToken = gatewayToken
+                    CoroutineScope(Dispatchers.IO).launch {
+                        appPreferences.saveBackendSettings(backendSettings.copy(token = gatewayToken))
+                    }
 
                     // GitHub settings (optional)
                     prefs.githubToken = githubToken
@@ -235,6 +254,66 @@ class SettingsActivity : AppCompatActivity() {
             }
             binding.orchestratorTestButton.isEnabled = true
         }
+    }
+
+    private fun readGatewaySettings(): BackendSettings? {
+        val host = binding.gatewayHostInput.text?.toString()?.trim().orEmpty()
+        val port = binding.gatewayPortInput.text?.toString()?.trim().orEmpty()
+        val token = binding.gatewayTokenInput.text?.toString()?.trim().orEmpty()
+
+        binding.gatewayHostInput.error = null
+        binding.gatewayPortInput.error = null
+        binding.gatewayTokenInput.error = null
+
+        return when (val result = GatewaySettingsValidator.validate(
+            host = host,
+            portText = port,
+            token = token,
+            useHttps = binding.useHttpsSwitch.isChecked
+        )) {
+            is ValidationResult.Valid -> result.settings.also {
+                binding.serverUrlInput.setText(it.baseUrl)
+            }
+            is ValidationResult.Invalid -> {
+                binding.gatewayHostInput.error = result.hostError
+                binding.gatewayPortInput.error = result.portError
+                binding.gatewayTokenInput.error = result.tokenError
+                null
+            }
+        }
+    }
+
+    private fun testGatewayConnection() {
+        val settings = readGatewaySettings() ?: return
+        val token = binding.gatewayTokenInput.text?.toString()?.trim().orEmpty()
+        if (token.isBlank()) {
+            showGatewayTestStatus("Enter a Gateway Token first.", success = false)
+            return
+        }
+
+        binding.gatewayTestButton.isEnabled = false
+        showGatewayTestStatus("Testing Gateway connection...", neutral = true)
+
+        CoroutineScope(Dispatchers.Main).launch {
+            val result = gatewayHealthChecker.check(settings, token)
+            result.onSuccess {
+                showGatewayTestStatus("Connected to Gateway successfully.", success = true)
+            }.onFailure { error ->
+                showGatewayTestStatus(error.message ?: "Could not connect to Gateway.", success = false)
+            }
+            binding.gatewayTestButton.isEnabled = true
+        }
+    }
+
+    private fun showGatewayTestStatus(message: String, success: Boolean? = null, neutral: Boolean = false) {
+        binding.gatewayTestStatus.visibility = View.VISIBLE
+        binding.gatewayTestStatus.text = message
+        val colorRes = when {
+            neutral -> R.color.timestamp_text
+            success == true -> R.color.status_completed
+            else -> R.color.status_failed
+        }
+        binding.gatewayTestStatus.setTextColor(ContextCompat.getColor(this, colorRes))
     }
 
     private fun showOrchestratorTestStatus(message: String, success: Boolean? = null, neutral: Boolean = false) {

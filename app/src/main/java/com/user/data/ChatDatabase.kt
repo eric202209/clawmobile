@@ -20,7 +20,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         CachedResponse::class
     ],
     version = 9,
-    exportSchema = false
+    exportSchema = true
 )
 abstract class ChatDatabase : RoomDatabase() {
     abstract fun chatDao(): ChatDao
