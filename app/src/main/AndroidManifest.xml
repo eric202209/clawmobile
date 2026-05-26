@@ -39,6 +39,7 @@
         <activity android:name=".ui.tasks.TaskListActivity" android:exported="false" />
         <activity android:name=".ui.tasks.ProjectDetailActivity" android:exported="false" />
         <activity android:name=".ui.tasks.SessionDetailActivity" android:exported="false" />
+        <activity android:name=".ui.tasks.SessionMonitorActivity" android:exported="false" />
         <activity android:name=".ui.tasks.TaskDetailActivity" android:exported="false" />
         <activity android:name=".ui.tools.GitHubActivity" android:exported="false" />
         <activity android:name=".ui.permissions.PermissionsActivity" android:exported="false" />

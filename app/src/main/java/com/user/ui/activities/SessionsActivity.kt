@@ -13,7 +13,7 @@ import com.user.data.MobileSessionListItem
 import com.user.databinding.ActivitySessionsBinding
 import com.user.service.OrchestratorApiClient
 import com.user.ui.SessionAdapter
-import com.user.ui.tasks.SessionDetailActivity
+import com.user.ui.tasks.SessionMonitorActivity
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -40,7 +40,7 @@ class SessionsActivity : AppCompatActivity() {
         title = getString(R.string.nav_sessions)
 
         sessionAdapter = SessionAdapter { session ->
-            val intent = Intent(this, SessionDetailActivity::class.java).apply {
+            val intent = Intent(this, SessionMonitorActivity::class.java).apply {
                 putExtra("session_id", session.id.toString())
                 putExtra("session_name", session.name)
             }

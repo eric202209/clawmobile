@@ -314,19 +314,89 @@ data class TaskChangeSetResponse(
     val recordedAt: String? = null,
 )
 
+data class MobileActiveAlert(
+    val level: String? = null,
+    val message: String? = null,
+    val at: String? = null
+)
+
 data class MobileSessionSummaryResponse(
     @SerializedName("session_id")
     val sessionId: Int = 0,
     val name: String = "",
     val status: String = "",
+    @SerializedName("execution_mode")
+    val executionMode: String = "automatic",
     @SerializedName("is_active")
     val isActive: Boolean = false,
     @SerializedName("started_at")
     val startedAt: String? = null,
+    @SerializedName("active_alert")
+    val activeAlert: MobileActiveAlert? = null,
     @SerializedName("task_progress")
     val taskProgress: TaskStatsResponse? = null,
     @SerializedName("recent_logs")
     val recentLogs: List<RecentActivity> = emptyList()
+)
+
+// ── Recovery Context ──────────────────────────────────────────
+
+data class RecoveryTaskInfo(
+    @SerializedName("task_id") val taskId: Int = 0,
+    val title: String = "",
+    val status: String = "",
+    @SerializedName("repair_attempts") val repairAttempts: Int = 0,
+    @SerializedName("files_changed") val filesChanged: List<String> = emptyList()
+)
+
+data class RecoveryPreservedState(
+    @SerializedName("completed_tasks_checkpointed") val completedTasksCheckpointed: Boolean = false,
+    @SerializedName("conversation_history_resumable") val conversationHistoryResumable: Boolean = false,
+    @SerializedName("failed_task_rolled_back") val failedTaskRolledBack: Boolean = false,
+    @SerializedName("remaining_plan_intact") val remainingPlanIntact: Boolean = false
+)
+
+data class RecoveryAction(
+    val label: String = "",
+    val action: String = "",
+    @SerializedName("task_id") val taskId: Int? = null
+)
+
+data class MobileRecoveryContext(
+    @SerializedName("session_id") val sessionId: Int = 0,
+    @SerializedName("session_name") val sessionName: String = "",
+    @SerializedName("session_status") val sessionStatus: String = "",
+    @SerializedName("stop_reasons") val stopReasons: List<String> = emptyList(),
+    @SerializedName("stop_category") val stopCategory: String = "",
+    val tasks: List<RecoveryTaskInfo> = emptyList(),
+    val preserved: RecoveryPreservedState = RecoveryPreservedState(),
+    @SerializedName("recommended_actions") val recommendedActions: List<RecoveryAction> = emptyList()
+)
+
+// ── Narrative Timeline ────────────────────────────────────────
+
+data class NarrativeTimelineEvent(
+    val id: String = "",
+    val at: String? = null,
+    val phase: String = "",
+    val kind: String = "",
+    val title: String = "",
+    val detail: String? = null
+)
+
+data class NarrativeTimelinePhase(
+    val phase: String = "",
+    val title: String = "",
+    @SerializedName("event_count") val eventCount: Int = 0,
+    val events: List<NarrativeTimelineEvent> = emptyList()
+)
+
+data class MobileNarrativeTimeline(
+    @SerializedName("session_id") val sessionId: Int = 0,
+    @SerializedName("session_status") val sessionStatus: String = "",
+    val phases: List<NarrativeTimelinePhase> = emptyList(),
+    @SerializedName("event_count") val eventCount: Int = 0,
+    @SerializedName("source_note") val sourceNote: String = ""
 )
 
 data class MobileCheckpoint(

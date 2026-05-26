@@ -21,6 +21,8 @@ import com.user.data.ExecutionFailureSummaryResponse
 import com.user.data.ReplanResponse
 import com.user.data.InterventionListResponse
 import com.user.data.InterventionRequest
+import com.user.data.MobileNarrativeTimeline
+import com.user.data.MobileRecoveryContext
 import com.user.data.MobileSessionSummaryResponse
 import com.user.data.OrchestratorApiResponse
 import com.user.data.PrefsManager
@@ -407,6 +409,48 @@ class OrchestratorApiClient(
         } catch (e: Exception) {
             Log.w(TAG, "Error fetching session summary for $sessionId: ${e.message}")
             buildFailure("Failed to load session summary for $sessionId.", e)
+        }
+    }
+
+    suspend fun getRecoveryContext(sessionId: String): Result<MobileRecoveryContext> = withContext(Dispatchers.IO) {
+        try {
+            val url = buildMobileUrl("sessions/${sessionId}/recovery-context")
+            val request = Request.Builder()
+                .url(url)
+                .headers(okhttp3.Headers.headersOf(*buildHeadersArray()))
+                .get()
+                .build()
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) return@withContext buildFailure(
+                    "Recovery context API failed for $sessionId (${response.code} ${response.message})."
+                )
+                val json = response.body?.string() ?: throw Exception("Empty response")
+                Result.success(gson.fromJson(json, MobileRecoveryContext::class.java))
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "Error fetching recovery context for $sessionId: ${e.message}")
+            buildFailure("Failed to load recovery context for $sessionId.", e)
+        }
+    }
+
+    suspend fun getNarrativeTimeline(sessionId: String): Result<MobileNarrativeTimeline> = withContext(Dispatchers.IO) {
+        try {
+            val url = buildMobileUrl("sessions/${sessionId}/timeline")
+            val request = Request.Builder()
+                .url(url)
+                .headers(okhttp3.Headers.headersOf(*buildHeadersArray()))
+                .get()
+                .build()
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) return@withContext buildFailure(
+                    "Narrative timeline API failed for $sessionId (${response.code} ${response.message})."
+                )
+                val json = response.body?.string() ?: throw Exception("Empty response")
+                Result.success(gson.fromJson(json, MobileNarrativeTimeline::class.java))
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "Error fetching narrative timeline for $sessionId: ${e.message}")
+            buildFailure("Failed to load narrative timeline for $sessionId.", e)
         }
     }
 
