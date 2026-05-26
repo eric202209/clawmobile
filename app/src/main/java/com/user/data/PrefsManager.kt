@@ -6,6 +6,13 @@ import com.user.BuildConfig
 
 private const val PREFS_TAG = "PrefsManager"
 
+fun previewSecret(value: String): String =
+    when {
+        value.isEmpty() -> "(empty)"
+        value.length <= 8 -> "${"*".repeat(value.length)} (${value.length} chars)"
+        else -> "${value.take(8)}...${value.length} chars"
+    }
+
 class PrefsManager(context: Context) {
     private val prefs = context.getSharedPreferences("openclaw_prefs", Context.MODE_PRIVATE)
     private companion object {
@@ -69,17 +76,18 @@ class PrefsManager(context: Context) {
         get() {
             val value = prefs.getString("orchestrator_api_key", "") ?: ""
             // Don't log the full API key for security, just show if it's set
-            Log.d(PREFS_TAG, "orchestratorApiKey GET: ${if (value.isEmpty()) "(empty)" else "${value.substring(0, 8)}...${value.length} chars"}")
+            Log.d(PREFS_TAG, "orchestratorApiKey GET: ${previewSecret(value)}")
             return value
         }
         set(value) {
-            Log.d(PREFS_TAG, "orchestratorApiKey SET: ${if (value.isEmpty()) "(empty)" else "${value.substring(0, 8)}...${value.length} chars"}")
+            Log.d(PREFS_TAG, "orchestratorApiKey SET: ${previewSecret(value)}")
             prefs.edit().putString("orchestrator_api_key", value).apply()
         }
 
     // Check if Orchestrator is configured
     fun isOrchestratorConfigured(): Boolean {
-        return orchestratorServerUrl.isNotEmpty() && orchestratorApiKey.isNotEmpty()
+        return orchestratorServerUrl.isNotEmpty() &&
+            (orchestratorApiKey.isNotEmpty() || gatewayToken.isNotEmpty())
     }
 
     fun getPinnedProjectIds(): Set<String> =

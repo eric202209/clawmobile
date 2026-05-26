@@ -61,13 +61,14 @@ class WebSocketManager(private val prefs: PrefsManager) {
     private fun doConnect(sessionId: String) {
         val rawBase = prefs.orchestratorServerUrl.trim().trimEnd('/')
         val base = when {
+            rawBase.endsWith("/api/v1/mobile") -> rawBase.removeSuffix("/api/v1/mobile")
             rawBase.endsWith("/api/v1") -> rawBase.removeSuffix("/api/v1")
-            rawBase.endsWith("/mobile") -> rawBase.removeSuffix("/api/v1/mobile")
+            rawBase.endsWith("/mobile") -> rawBase.removeSuffix("/mobile")
             else -> rawBase
         }
         val wsBase = base.replace("http://", "ws://").replace("https://", "wss://")
-        val apiKey = prefs.orchestratorApiKey
-        val url = "$wsBase/api/v1/mobile/sessions/$sessionId/logs/stream?api_key=$apiKey"
+        val apiKey = prefs.orchestratorApiKey.ifBlank { prefs.gatewayToken }
+        val url = "$wsBase/api/v1/mobile/sessions/$sessionId/logs/stream"
 
         Log.d(TAG, "Connecting to WebSocket: $url")
         val request = Request.Builder()

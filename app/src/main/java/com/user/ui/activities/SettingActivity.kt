@@ -13,6 +13,7 @@ import com.user.data.AppPreferences
 import com.user.data.BackendSettings
 import com.user.data.GitConnection
 import com.user.data.PrefsManager
+import com.user.data.previewSecret
 import com.user.databinding.ActivitySettingsBinding
 import com.user.service.GatewayHealthChecker
 import com.user.service.OrchestratorApiClient
@@ -193,7 +194,7 @@ class SettingsActivity : AppCompatActivity() {
                     Log.d(TAG, "SAVING settings:")
                     Log.d(TAG, "  serverUrl = '$serverUrl'")
                     Log.d(TAG, "  orchestratorServerUrl = '$orchestratorServerUrl'")
-                    Log.d(TAG, "  orchestratorApiKey = '${if (apiKeyToUse.isEmpty()) "(empty)" else "${apiKeyToUse.substring(0, 8)}..."}'")
+                    Log.d(TAG, "  orchestratorApiKey = '${previewSecret(apiKeyToUse)}'")
 
                     prefs.serverUrl = serverUrl
                     prefs.orchestratorServerUrl = orchestratorServerUrl
@@ -201,7 +202,7 @@ class SettingsActivity : AppCompatActivity() {
                     // Verify what was actually saved
                     val savedOrchUrl = prefs.orchestratorServerUrl
                     val savedApiKey = prefs.orchestratorApiKey
-                    Log.d(TAG, "VERIFIED SAVED - Url: '$savedOrchUrl', ApiKey: '${if (savedApiKey.isEmpty()) "(empty)" else "${savedApiKey.substring(0, 8)}..."}'")
+                    Log.d(TAG, "VERIFIED SAVED - Url: '$savedOrchUrl', ApiKey: '${previewSecret(savedApiKey)}'")
 
                     Toast.makeText(this, "Settings saved! Reconnecting...", Toast.LENGTH_LONG).show()
                     finish()

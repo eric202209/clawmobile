@@ -32,6 +32,7 @@ import com.user.data.ProjectStatusResponse
 import com.user.data.ProjectTasksResponse
 import com.user.data.KnowledgeUsageResponse
 import com.user.data.TaskChangeSetResponse
+import com.user.data.previewSecret
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -75,7 +76,11 @@ class OrchestratorApiClient(
             Log.d(TAG, "Method: ${request.method}")
             Log.d(TAG, "Headers:")
             request.headers.forEach { (name, value) ->
-                Log.d(TAG, "  $name: $value")
+                val displayValue = when (name.lowercase()) {
+                    "x-openclaw-api-key", "authorization" -> previewSecret(value)
+                    else -> value
+                }
+                Log.d(TAG, "  $name: $displayValue")
             }
 
             val response = chain.proceed(request)
@@ -95,6 +100,7 @@ class OrchestratorApiClient(
     private fun getBaseUrl(): String {
         val rawBaseUrl = (overrideServerUrl ?: prefs.orchestratorServerUrl).trim().trimEnd('/')
         return when {
+            rawBaseUrl.endsWith("/api/v1/mobile") -> rawBaseUrl.removeSuffix("/api/v1/mobile")
             rawBaseUrl.endsWith("/api/v1") -> rawBaseUrl.removeSuffix("/api/v1")
             rawBaseUrl.endsWith("/mobile") -> rawBaseUrl.removeSuffix("/mobile")
             else -> rawBaseUrl
@@ -129,9 +135,10 @@ class OrchestratorApiClient(
     }
 
     private fun getHeaders(includeGatewayAuthorization: Boolean = false): Map<String, String> {
+        val apiKey = overrideApiKey ?: prefs.orchestratorApiKey.ifBlank { gatewayToken }
         val headers = mutableMapOf(
             "Content-Type" to "application/json",
-            "X-OpenClaw-API-Key" to (overrideApiKey ?: prefs.orchestratorApiKey)
+            "X-OpenClaw-API-Key" to apiKey
         )
         if (includeGatewayAuthorization && gatewayToken.isNotBlank()) {
             headers["Authorization"] = "Bearer $gatewayToken"
@@ -775,17 +782,11 @@ class OrchestratorApiClient(
 
     suspend fun pauseSession(sessionId: String): Result<MobileSessionActionResponse> = withContext(Dispatchers.IO) {
         try {
-            val url = buildMobileUrl("sessions/${sessionId}/pause")
-            val request = Request.Builder()
-                .url(url)
-                .headers(okhttp3.Headers.headersOf(*buildHeadersArray()))
-                .post(okhttp3.RequestBody.create(null, ByteArray(0)))
-                .build()
-            client.newCall(request).execute().use { response ->
-                if (!response.isSuccessful) return@withContext buildFailure("Pause session failed (${response.code}).")
-                val json = response.body?.string() ?: throw Exception("Empty response")
-                Result.success(gson.fromJson(json, MobileSessionActionResponse::class.java))
-            }
+            postSessionActionWithFallback(
+                sessionId = sessionId,
+                action = "pause",
+                defaultMessage = "Session pause requested"
+            )
         } catch (e: Exception) {
             buildFailure("Failed to pause session $sessionId.", e)
         }
