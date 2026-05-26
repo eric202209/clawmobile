@@ -154,7 +154,7 @@ class SessionMonitorActivity : AppCompatActivity() {
         // Action buttons
         val isRunning = status == "running"
         val isPaused = status == "paused"
-        val isStopped = status == "stopped" || status == "failed" || status == "cancelled"
+        val isStopped = status == "stopped" || status == "failed" || status == "cancelled" || status == "canceled"
         binding.resumeButton.visibility = if (isPaused || isStopped) View.VISIBLE else View.GONE
         binding.pauseButton.visibility = if (isRunning) View.VISIBLE else View.GONE
         binding.stopButton.visibility = if (isRunning || isPaused) View.VISIBLE else View.GONE
@@ -164,6 +164,8 @@ class SessionMonitorActivity : AppCompatActivity() {
         if (alert?.message != null) {
             binding.alertMessage.text = alert.message
             binding.alertCard.visibility = View.VISIBLE
+        } else {
+            binding.alertCard.visibility = View.GONE
         }
         // (Recovery context may also supply stop_reasons — bindRecoveryContext fills alertCard too)
     }
@@ -190,6 +192,8 @@ class SessionMonitorActivity : AppCompatActivity() {
                 binding.taskRepairBadge.visibility = View.GONE
             }
             binding.taskCard.visibility = View.VISIBLE
+        } else {
+            binding.taskCard.visibility = View.GONE
         }
 
         // Preserved state
@@ -220,6 +224,9 @@ class SessionMonitorActivity : AppCompatActivity() {
                 binding.actionsChipGroup.addView(chip)
             }
             binding.actionsCard.visibility = View.VISIBLE
+        } else {
+            binding.actionsChipGroup.removeAllViews()
+            binding.actionsCard.visibility = View.GONE
         }
     }
 
@@ -231,6 +238,7 @@ class SessionMonitorActivity : AppCompatActivity() {
         if (timeline.phases.isEmpty()) {
             binding.timelineEmptyHint.visibility = View.VISIBLE
             binding.timelinePhasesContainer.removeAllViews()
+            binding.latestEventCard.visibility = View.GONE
             return
         }
         binding.timelineEmptyHint.visibility = View.GONE
@@ -248,6 +256,8 @@ class SessionMonitorActivity : AppCompatActivity() {
             }
             binding.latestEventAt.text = TimeFormatUtils.formatApiTimestamp(latestEvent.at) ?: ""
             binding.latestEventCard.visibility = View.VISIBLE
+        } else {
+            binding.latestEventCard.visibility = View.GONE
         }
 
         // Build phase rows
@@ -415,7 +425,7 @@ class SessionMonitorActivity : AppCompatActivity() {
     private fun statusBadgeDrawable(status: String) = when (status) {
         "running" -> R.drawable.badge_running
         "paused", "awaiting_input" -> R.drawable.badge_pending
-        "stopped", "failed", "cancelled" -> R.drawable.badge_timeout
+        "stopped", "failed", "cancelled", "canceled" -> R.drawable.badge_timeout
         "completed" -> R.drawable.badge_completed
         else -> R.drawable.badge_pending
     }
