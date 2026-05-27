@@ -20,8 +20,13 @@
         app:showAsAction="never" />
 
     <item
-        android:id="@+id/action_github"
-        android:title="@string/main_menu_github"
+        android:id="@+id/action_tools"
+        android:title="@string/main_menu_tools"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_notes"
+        android:title="@string/main_menu_notes"
         app:showAsAction="never" />
 
     <item
@@ -32,11 +37,6 @@
     <item
         android:id="@+id/action_about"
         android:title="@string/main_menu_about"
-        app:showAsAction="never" />
-
-    <item
-        android:id="@+id/action_help"
-        android:title="@string/main_menu_guide"
         app:showAsAction="never" />
 
 </menu>

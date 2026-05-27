@@ -37,7 +37,6 @@ import com.user.databinding.BottomSheetAttachmentBinding
 import com.user.service.AgentInfo
 import com.user.ui.ChatAdapter
 import com.user.ui.tasks.TaskListActivity
-import com.user.ui.tools.GitHubActivity
 import com.user.util.UiState
 import com.user.viewmodel.ChatViewModel
 
@@ -625,8 +624,12 @@ class MainActivity : AppCompatActivity() {
                 startActivity(Intent(this, TaskListActivity::class.java))
                 true
             }
-            R.id.action_github -> {
-                startActivity(Intent(this, GitHubActivity::class.java))
+            R.id.action_tools -> {
+                startActivity(Intent(this, com.user.ui.tools.ToolsActivity::class.java))
+                true
+            }
+            R.id.action_notes -> {
+                startActivity(Intent(this, NotesActivity::class.java))
                 true
             }
             R.id.action_settings -> {
@@ -635,14 +638,6 @@ class MainActivity : AppCompatActivity() {
             }
             R.id.action_about -> {
                 startActivity(Intent(this, AboutActivity::class.java))
-                true
-            }
-            R.id.action_help -> {
-                startActivity(
-                    Intent(this, OnboardingActivity::class.java).apply {
-                        putExtra(OnboardingActivity.EXTRA_GUIDE_MODE, true)
-                    }
-                )
                 true
             }
             else -> super.onOptionsItemSelected(item)

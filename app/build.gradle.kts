@@ -109,10 +109,12 @@ dependencies {
     implementation(libs.work.runtime.ktx)
     implementation(libs.work.runtime)
     implementation(libs.datastore.preferences)
+    implementation(libs.snakeyaml)
 
     testImplementation(libs.junit)
     testImplementation(libs.coroutines.test)
     testImplementation(libs.mockwebserver)
+    testImplementation("org.json:json:20231013")
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.test.core)
     androidTestImplementation(libs.coroutines.test)

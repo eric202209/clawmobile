@@ -63,7 +63,7 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/space_lg"
+                        android:layout_marginTop="@dimen/space_md"
                         android:orientation="horizontal">
 
                         <com.google.android.material.textfield.TextInputLayout
@@ -121,6 +121,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:autofillHints="none"
+                            android:enabled="false"
                             android:hint="@string/settings_server_url_hint"
                             android:inputType="textUri"
                             android:singleLine="true"
@@ -149,7 +150,7 @@
                     <com.google.android.material.textview.MaterialTextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/space_sm"
+                        android:layout_marginTop="@dimen/space_xs"
                         android:text="@string/settings_gateway_token_desc"
                         android:textColor="@color/text_secondary"
                         android:textSize="12sp" />
@@ -218,7 +219,7 @@
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/space_lg"
+                        android:layout_marginTop="@dimen/space_md"
                         android:hint="@string/settings_orchestrator_url"
                         style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
 
@@ -255,7 +256,7 @@
                     <com.google.android.material.textview.MaterialTextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/space_sm"
+                        android:layout_marginTop="@dimen/space_xs"
                         android:text="@string/settings_orchestrator_api_key_desc"
                         android:textColor="@color/text_secondary"
                         android:textSize="12sp" />
@@ -339,7 +340,7 @@
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/space_lg"
+                        android:layout_marginTop="@dimen/space_md"
                         android:hint="@string/settings_github_token"
                         app:endIconMode="password_toggle"
                         style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
@@ -358,7 +359,7 @@
                     <com.google.android.material.textview.MaterialTextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/space_sm"
+                        android:layout_marginTop="@dimen/space_xs"
                         android:text="@string/settings_github_token_desc"
                         android:textColor="@color/text_secondary"
                         android:textSize="12sp" />
@@ -366,7 +367,7 @@
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/space_lg"
+                        android:layout_marginTop="@dimen/space_md"
                         android:hint="@string/settings_github_api_url"
                         style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
 
