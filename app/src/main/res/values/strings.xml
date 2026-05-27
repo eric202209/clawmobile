@@ -175,6 +175,8 @@
     <string name="about_version">Version %1$s</string>
     <string name="about_min_openclaw">Minimum supported OpenClaw Gateway: 2.13+</string>
     <string name="about_github">Open GitHub</string>
+    <string name="about_section_compatibility">Compatibility</string>
+    <string name="about_section_links">Links</string>
     <string name="diagnostics_title">Diagnostics</string>
     <string name="chat_history_title">Saved Chats</string>
     <string name="chat_history_empty">No saved chat history yet.</string>
