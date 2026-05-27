@@ -118,7 +118,6 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.test.core)
     androidTestImplementation(libs.coroutines.test)
-    androidTestImplementation(libs.room.testing)
     androidTestImplementation(libs.espresso)
 }
 

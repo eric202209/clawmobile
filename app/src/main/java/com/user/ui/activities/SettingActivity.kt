@@ -132,7 +132,7 @@ class SettingsActivity : AppCompatActivity() {
 
             Log.d(TAG, "BEFORE SAVING:")
             Log.d(TAG, "  orchestratorServerUrl input: '$orchestratorServerUrl'")
-            Log.d(TAG, "  gatewayToken: '$gatewayToken'")
+            Log.d(TAG, "  gatewayToken: '${previewSecret(gatewayToken)}'")
 
             when {
                 serverUrl.isEmpty() -> {

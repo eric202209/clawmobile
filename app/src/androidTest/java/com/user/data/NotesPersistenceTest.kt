@@ -1,11 +1,12 @@
 package com.user.data
 
+import android.content.Context
 import androidx.room.Room
-import androidx.room.testing.MigrationTestHelper
+import androidx.sqlite.db.SupportSQLiteDatabase
+import androidx.sqlite.db.SupportSQLiteOpenHelper
 import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.test.platform.app.InstrumentationRegistry
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -13,7 +14,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -21,14 +21,6 @@ import org.junit.runner.RunWith
 class NotesPersistenceTest {
     private lateinit var db: ChatDatabase
     private lateinit var dao: NoteDao
-
-    @get:Rule
-    val migrationHelper = MigrationTestHelper(
-        InstrumentationRegistry.getInstrumentation(),
-        ChatDatabase::class.java,
-        emptyList(),
-        FrameworkSQLiteOpenHelperFactory()
-    )
 
     @Before
     fun setUp() {
@@ -90,26 +82,37 @@ class NotesPersistenceTest {
 
     @Test
     fun migrate9To10CreatesNotesTable() {
-        migrationHelper.createDatabase(TEST_DB, 9).apply {
-            close()
-        }
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        context.deleteDatabase(TEST_DB)
+        val helper = FrameworkSQLiteOpenHelperFactory().create(
+            SupportSQLiteOpenHelper.Configuration.builder(context)
+                .name(TEST_DB)
+                .callback(object : SupportSQLiteOpenHelper.Callback(9) {
+                    override fun onCreate(db: SupportSQLiteDatabase) = Unit
+                    override fun onUpgrade(
+                        db: SupportSQLiteDatabase,
+                        oldVersion: Int,
+                        newVersion: Int
+                    ) = Unit
+                })
+                .build()
+        )
 
-        migrationHelper.runMigrationsAndValidate(
-            TEST_DB,
-            10,
-            true,
-            ChatDatabase.MIGRATION_9_10
-        ).apply {
-            execSQL(
+        try {
+            val migrationDb = helper.writableDatabase
+            ChatDatabase.MIGRATION_9_10.migrate(migrationDb)
+            migrationDb.execSQL(
                 "INSERT INTO notes (title, body, createdAt, tags) VALUES " +
                     "('Migrated', 'Body', 123, '[\"migration\"]')"
             )
-            query("SELECT title, tags FROM notes").use { cursor ->
+            migrationDb.query("SELECT title, tags FROM notes").use { cursor ->
                 assertTrue(cursor.moveToFirst())
                 assertEquals("Migrated", cursor.getString(0))
                 assertEquals("""["migration"]""", cursor.getString(1))
             }
-            close()
+        } finally {
+            helper.close()
+            context.deleteDatabase(TEST_DB)
         }
     }
 
