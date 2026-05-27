@@ -83,9 +83,9 @@
     </style>
 
     <style name="TextAppearance.OpenClaw.PopupMenuItem" parent="TextAppearance.AppCompat.Body1">
-        <item name="android:textSize">15sp</item>
+        <item name="android:textSize">14sp</item>
         <item name="android:textColor">@color/text_primary</item>
-        <item name="android:textStyle">bold</item>
+        <item name="android:textStyle">normal</item>
     </style>
 
     <!-- Popup Menu -->

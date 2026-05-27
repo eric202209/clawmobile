@@ -29,8 +29,8 @@
     <string name="orchestrator_dashboard_stats" formatted="false">📊 Dashboard:\nProjects: %d | Tasks: %d\nRunning: %d | Pending: %d | Done: %d | Failed: %d</string>
     <string name="local_stats" formatted="false">Tasks: %d | Running: %d | Pending: %d | Completed: %d</string>
     <string name="orchestrator_syncing">Syncing with Orchestrator…</string>
-    <string name="settings_orchestrator_title">Orchestrator Settings</string>
-    <string name="settings_orchestrator_url">Orchestrator Server URL</string>
+    <string name="settings_orchestrator_title">Orchestrator</string>
+    <string name="settings_orchestrator_url">API URL</string>
     <string name="settings_orchestrator_api_key">API Key</string>
     <string name="settings_orchestrator_test">Test Connection</string>
     <string name="settings_orchestrator_test_in_progress">Testing Orchestrator connection…</string>
@@ -40,35 +40,35 @@
     <string name="settings_orchestrator_test_missing_key">Enter an API key or Gateway Token first.</string>
 
     <!-- Settings Activity -->
-    <string name="settings_gateway_title">GX10 OpenClaw Gateway</string>
+    <string name="settings_gateway_title">Gateway</string>
     <string name="settings_gateway_host">Host</string>
     <string name="settings_gateway_port">Port</string>
     <string name="settings_use_https">Use HTTPS</string>
     <string name="settings_gateway_test">Test Gateway</string>
-    <string name="settings_server_url">Server URL</string>
-    <string name="settings_server_url_hint">http://TAILSCALE_OR_GX10_IP:8000</string>
-    <string name="settings_server_url_desc">Recommended path:\n• ClawMobile -&gt; Tailscale -&gt; GX10 host -&gt; OpenClaw Gateway :8000\n\nExamples:\n• Phone over Tailscale -&gt; http://xxx.x.y.z:8000\n• Same LAN phone -&gt; http://GX10_LAN_IP:8000\n• Emulator tunnel testing -&gt; http://xx.x.x.x:18789\n\nDo not use the Orchestrator dashboard/API URL here. Port 8080 is separate.</string>
+    <string name="settings_server_url">Preview URL</string>
+    <string name="settings_server_url_hint">http://host:8000</string>
+    <string name="settings_server_url_desc">Required for chat. Enter the Gateway address your phone can reach, then tap Test Gateway.\n\nUse a Tailscale IP or same-WiFi host IP. Do not use localhost on a real phone.</string>
     <string name="settings_gateway_token">Gateway Token</string>
-    <string name="settings_gateway_token_hint">Enter API key or use auto-filled value from local.properties</string>
-    <string name="settings_gateway_token_desc">The MOBILE_GATEWAY_API_KEY from your local.properties file\n• This is the ONLY API key - used for both Gateway and Orchestrator\n• The key will be pre-filled if set in local.properties\n• Make sure local.properties exists and contains mobile_gateway_api_key=your_key</string>
+    <string name="settings_gateway_token_hint">Paste your OpenClaw API key</string>
+    <string name="settings_gateway_token_desc">Usually the same API key used by OpenClaw Gateway and Orchestrator. It is required before chat can connect.</string>
 
-    <string name="settings_orchestrator_dashboard_title">Orchestrator Dashboard API (Optional)</string>
-    <string name="settings_orchestrator_server_url_hint">http://GX10_IP:8080/api/v1</string>
-    <string name="settings_orchestrator_api_key_desc">Same as Gateway Token - there\'s only ONE API key!\n• Auto-filled from local.properties if configured\n• The value is synchronized when you save settings\n• No need to enter separately - it uses the Gateway Token</string>
-    <string name="settings_orchestrator_api_key_hint">Same as Gateway Token (auto-synced)</string>
-    <string name="settings_orchestrator_desc">This key allows ClawMobile to sync project/task stats from Orchestrator dashboard. The API uses X-OpenClaw-API-Key header for authentication.</string>
+    <string name="settings_orchestrator_dashboard_title">Orchestrator (Optional)</string>
+    <string name="settings_orchestrator_server_url_hint">http://host:8080/api/v1</string>
+    <string name="settings_orchestrator_api_key_desc">Leave blank to use the Gateway Token. Add this only if you want Runs, projects, tasks, and sessions.</string>
+    <string name="settings_orchestrator_api_key_hint">Defaults to Gateway Token</string>
+    <string name="settings_orchestrator_desc">Optional. Enables Runs, project progress, tasks, sessions, and checkpoints. Chat works without this.</string>
 
     <string name="settings_github_title">GitHub Integration (Optional)</string>
     <string name="settings_github_token">Personal Access Token</string>
-    <string name="settings_github_token_hint">ghp_xxxxxxxxxxxx</string>
-    <string name="settings_github_token_desc">Generate at: github.com/settings/tokens</string>
+    <string name="settings_github_token_hint">Optional token</string>
+    <string name="settings_github_token_desc">Only needed for future repo-aware workflows. Leave blank if you do not use GitHub from Claw Mobile.</string>
     <string name="settings_github_api_url">API URL (Optional)</string>
     <string name="settings_github_api_url_hint">https://api.github.com</string>
     <string name="settings_github_repo">Default Repository (Optional)</string>
     <string name="settings_github_repo_hint">owner/repo</string>
-    <string name="settings_github_desc">• @github show PRs - List open PRs\n• @github issue #123 - Show issue\n• @github commit abc123 - Show commit</string>
+    <string name="settings_github_desc">Optional repo context for future run/task integrations. This is not required for chat.</string>
 
-    <string name="settings_save">Save Settings</string>
+    <string name="settings_save">Save and reconnect</string>
 
     <string name="onboarding_skip">Skip tutorial</string>
     <string name="onboarding_back">Back</string>
@@ -170,13 +170,67 @@
     <string name="main_menu_commands">Commands</string>
     <string name="main_menu_settings">Settings</string>
     <string name="main_menu_about">About</string>
-    <string name="main_menu_guide">Guide</string>
     <string name="about_title">About</string>
     <string name="about_version">Version %1$s</string>
     <string name="about_min_openclaw">Minimum supported OpenClaw Gateway: 2.13+</string>
     <string name="about_github">Open GitHub</string>
+    <string name="about_section_guide">Quick guide</string>
+    <string name="about_guide_setup_title">1. Connect the Gateway</string>
+    <string name="about_guide_setup_body">Open Settings, enter the Gateway host, port, token, and HTTPS mode, then tap Test Gateway. Use a LAN IP or Tailscale IP from your phone, not localhost.</string>
+    <string name="about_guide_chat_title">2. Start with chat</string>
+    <string name="about_guide_chat_body">Return to Claw Mobile and send a short operational request. Useful examples: show blockers all, diagnose task &lt;task_id&gt;, resume session &lt;session_id&gt;, or summarize why project &lt;project_id&gt; is stuck.</string>
+    <string name="about_guide_runs_title">3. Use Runs for supervision</string>
+    <string name="about_guide_runs_body">Open Runs when you want to inspect tasks, sessions, checkpoints, and project progress. This is the mobile control surface for checking work while away from the host machine.</string>
+    <string name="about_guide_notes_tools_title">4. Work offline when needed</string>
+    <string name="about_guide_notes_tools_body">Use Notes for local scratchpad context and Tools for token estimates, prompt cleanup, JSON formatting, and YAML validation. These work without a running OpenClaw server.</string>
     <string name="about_section_compatibility">Compatibility</string>
     <string name="about_section_links">Links</string>
+
+    <!-- Phase 1 navigation -->
+    <string name="main_menu_tools">Tools</string>
+    <string name="main_menu_notes">Notes</string>
+
+    <!-- Tools activity -->
+    <string name="tools_title">Tools</string>
+    <string name="tool_token_title">Token Estimator</string>
+    <string name="tool_token_desc">Estimate token count — works offline.</string>
+    <string name="tool_token_input_hint">Enter text…</string>
+    <string name="tool_token_model_label">Model</string>
+    <string name="tool_token_estimate">Estimate</string>
+    <string name="tool_token_result">~%1$d tokens (%2$s)</string>
+    <string name="tool_token_empty">Enter text to estimate tokens.</string>
+    <string name="tool_json_title">JSON Formatter</string>
+    <string name="tool_json_desc">Format and validate JSON.</string>
+    <string name="tool_json_input_hint">Paste JSON here…</string>
+    <string name="tool_json_format">Format</string>
+    <string name="tool_json_empty">Enter JSON to format.</string>
+    <string name="tool_yaml_title">YAML Validator</string>
+    <string name="tool_yaml_desc">Check YAML syntax.</string>
+    <string name="tool_yaml_input_hint">Paste YAML here…</string>
+    <string name="tool_yaml_validate">Validate</string>
+    <string name="tool_yaml_valid">Valid YAML</string>
+    <string name="tool_yaml_empty">Enter YAML to validate.</string>
+    <string name="tool_prompt_title">Prompt Formatter</string>
+    <string name="tool_prompt_desc">Strip trailing whitespace, normalise blank lines, count tokens.</string>
+    <string name="tool_prompt_input_hint">Enter prompt…</string>
+    <string name="tool_prompt_format">Format</string>
+    <string name="tool_prompt_empty">Enter a prompt to format.</string>
+    <string name="tool_prompt_result">~%1$d tokens — formatted output:</string>
+
+    <!-- Notes -->
+    <string name="notes_title">Notes</string>
+    <string name="note_empty_state">No notes yet. Tap + to create one.</string>
+    <string name="note_new">New Note</string>
+    <string name="note_edit">Edit Note</string>
+    <string name="note_title_hint">Title</string>
+    <string name="note_body_hint">Note…</string>
+    <string name="note_tags_hint">Tags (comma-separated)</string>
+    <string name="note_save">Save</string>
+    <string name="note_saved">Note saved</string>
+    <string name="note_deleted">Note deleted</string>
+    <string name="note_delete_title">Delete note</string>
+    <string name="note_delete_message">Delete this note permanently?</string>
+    <string name="note_untitled">(no title)</string>
     <string name="diagnostics_title">Diagnostics</string>
     <string name="chat_history_title">Saved Chats</string>
     <string name="chat_history_empty">No saved chat history yet.</string>

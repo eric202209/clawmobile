@@ -17,44 +17,38 @@ import com.user.databinding.ActivityOnboardingBinding
 
 class OnboardingActivity : AppCompatActivity() {
 
-    companion object {
-        const val EXTRA_GUIDE_MODE = "guide_mode"
-    }
-
     private lateinit var binding: ActivityOnboardingBinding
     private lateinit var prefsManager: PrefsManager
-    private var guideMode: Boolean = false
     private val pages = listOf(
         OnboardingPage(
             eyebrow = "Welcome",
-            title = "ClawMobile is your mobile control plane",
-            body = "Use your phone to monitor OpenClaw runs, inspect project progress, and intervene when work is blocked.",
+            title = "Claw Mobile is your phone control plane",
+            body = "Use it for quick supervision: chat with the Gateway, check runs, capture notes, and use local AI utilities when the server is offline.",
             bullets = listOf(
-                "Track projects, tasks, and sessions from Orchestrator",
-                "Inspect logs, checkpoints, and file trees without going back to the host",
-                "Use ClawMobile for fast supervision, not full desktop replacement",
+                "Chat: send short operational requests to OpenClaw",
+                "Runs: inspect tasks, sessions, checkpoints, and project progress",
+                "Notes and Tools: keep scratchpad context and format prompts locally",
             ),
         ),
         OnboardingPage(
-            eyebrow = "Architecture",
-            title = "Gateway and Orchestrator do different jobs",
-            body = "ClawMobile talks to two pieces of your stack. Understanding that split makes setup and debugging much easier.",
+            eyebrow = "Setup",
+            title = "Connect the Gateway first",
+            body = "The Gateway is required for chat. Use Settings to enter the host, port, token, and HTTPS mode, then test the connection before returning to chat.",
             bullets = listOf(
-                "Gateway: live chat, device pairing, and direct OpenClaw communication",
-                "Orchestrator: projects, tasks, sessions, logs, checkpoints, and progress tracking",
-                "For phone access, Tailscale or a reachable host IP is usually the cleanest path",
+                "Use a LAN IP or Tailscale IP from your phone",
+                "Do not use localhost unless you are testing from an emulator tunnel",
+                "The Orchestrator URL is optional and belongs in its own Settings section",
             ),
         ),
         OnboardingPage(
-            eyebrow = "Remote control",
-            title = "Start with a few command patterns",
-            body = "When you are away from the computer, keep commands short and operational so the agent can act quickly.",
+            eyebrow = "Daily use",
+            title = "Keep mobile commands short",
+            body = "Claw Mobile works best as a compact operations surface, not a desktop replacement. Ask for status, blockers, summaries, or a specific session action.",
             bullets = listOf(
                 "show blockers all",
-                "open project <project_id>",
-                "status session <session_id>",
-                "resume session <session_id>",
                 "diagnose task <task_id>",
+                "resume session <session_id>",
+                "summarize why project <project_id> is stuck",
             ),
         ),
     )
@@ -66,7 +60,6 @@ class OnboardingActivity : AppCompatActivity() {
         applySystemInsets()
 
         prefsManager = PrefsManager(this)
-        guideMode = intent.getBooleanExtra(EXTRA_GUIDE_MODE, false)
 
         val adapter = OnboardingPagerAdapter(pages)
         binding.onboardingPager.adapter = adapter
@@ -183,9 +176,7 @@ class OnboardingActivity : AppCompatActivity() {
 
     private fun completeOnboarding() {
         prefsManager.onboardingCompleted = true
-        if (!guideMode) {
-            startActivity(Intent(this, MainActivity::class.java))
-        }
+        startActivity(Intent(this, MainActivity::class.java))
         finish()
     }
 }

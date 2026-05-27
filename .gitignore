@@ -127,3 +127,6 @@ clawmobile/specs/
 
 # docs
 docs/
+
+# Local Room schema exports
+app/schemas/

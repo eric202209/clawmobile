@@ -17,9 +17,10 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         Task::class,
         ApiRequest::class,
         ApiResponse::class,
-        CachedResponse::class
+        CachedResponse::class,
+        Note::class
     ],
-    version = 9,
+    version = 10,
     exportSchema = true
 )
 abstract class ChatDatabase : RoomDatabase() {
@@ -29,6 +30,7 @@ abstract class ChatDatabase : RoomDatabase() {
     abstract fun taskDao(): TaskDao
     abstract fun apiRequestDao(): ApiRequestDao
     abstract fun cachedResponseDao(): CachedResponseDao
+    abstract fun noteDao(): NoteDao
 
     companion object {
         @Volatile
@@ -44,6 +46,17 @@ abstract class ChatDatabase : RoomDatabase() {
             }
         }
 
+        val MIGRATION_9_10 = object : Migration(9, 10) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `notes` " +
+                        "(`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                        "`title` TEXT NOT NULL, `body` TEXT NOT NULL, " +
+                        "`createdAt` INTEGER NOT NULL, `tags` TEXT NOT NULL)"
+                )
+            }
+        }
+
         fun getDatabase(context: Context): ChatDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
@@ -51,8 +64,7 @@ abstract class ChatDatabase : RoomDatabase() {
                     ChatDatabase::class.java,
                     "openclaw_database"
                 )
-                    .addMigrations(MIGRATION_8_9)
-                    .fallbackToDestructiveMigration()
+                    .addMigrations(MIGRATION_8_9, MIGRATION_9_10)
                     .build()
                 INSTANCE = instance
                 instance
