@@ -78,6 +78,7 @@ class GatewayClient(
 
     fun connect() {
         if (state != State.DISCONNECTED) return
+        shouldReconnect = true
         state = State.CONNECTING
         _events.tryEmit(GatewayEvent.Connecting)
 
@@ -155,6 +156,8 @@ class GatewayClient(
     }
 
     fun isReady() = state == State.READY
+
+    fun isActive() = state != State.DISCONNECTED
 
 
     // ── WebSocket Listener ───────────────────────────────────

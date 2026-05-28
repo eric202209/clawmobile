@@ -53,6 +53,8 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
     private val networkMonitor = NetworkMonitor(application)
     private var gateway: GatewayClient? = null
     private var gatewayEventsJob: Job? = null
+    private var gatewayServerUrl: String? = null
+    private var gatewayAuthToken: String? = null
 
     // ── LiveData ──────────────────────────────────────────────
     private val _messages = MutableLiveData<List<ChatMessage>>()
@@ -133,20 +135,27 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun ensureGateway(): GatewayClient {
+        val serverUrl = prefs.serverUrl
+        val authToken = prefs.gatewayToken
         val current = gateway
-        if (current != null) return current
-
-        return GatewayClient(prefs.serverUrl, prefs.gatewayToken, ed25519).also { freshGateway ->
-            gateway = freshGateway
-            observeGatewayEvents(freshGateway)
+        if (
+            current != null &&
+            gatewayServerUrl == serverUrl &&
+            gatewayAuthToken == authToken
+        ) {
+            return current
         }
-    }
 
-    private fun resetGateway() {
-        gateway?.disconnect()
+        current?.disconnect()
         gatewayEventsJob?.cancel()
         gatewayEventsJob = null
-        gateway = null
+
+        return GatewayClient(serverUrl, authToken, ed25519).also { freshGateway ->
+            gateway = freshGateway
+            gatewayServerUrl = serverUrl
+            gatewayAuthToken = authToken
+            observeGatewayEvents(freshGateway)
+        }
     }
 
     private fun observeGatewayEvents(gatewayClient: GatewayClient) {
@@ -423,9 +432,10 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
             _status.value = "✕ Offline"
             return
         }
-        resetGateway()
+        val gatewayClient = ensureGateway()
+        if (gatewayClient.isActive()) return
         viewModelScope.launch(Dispatchers.IO) {
-            ensureGateway().connect()
+            gatewayClient.connect()
         }
     }
 
@@ -433,4 +443,3 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
         gateway?.disconnect()
     }
 }
-
