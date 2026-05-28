@@ -43,9 +43,10 @@ class GatewayClient(
     }
 
     private val client = OkHttpClient.Builder()
-        .connectTimeout(6, TimeUnit.SECONDS)
+        .connectTimeout(GatewayNetworkConfig.CONNECT_TIMEOUT_SECONDS, TimeUnit.SECONDS)
         .readTimeout(0, TimeUnit.SECONDS)
         .pingInterval(20, TimeUnit.SECONDS)
+        .retryOnConnectionFailure(true)
         .build()
 
     private var webSocket: WebSocket? = null

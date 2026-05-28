@@ -5,6 +5,7 @@ import kotlinx.coroutines.test.runTest
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import okhttp3.mockwebserver.SocketPolicy
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import kotlin.system.measureTimeMillis
@@ -33,5 +34,14 @@ class ConnectionTimeoutTest {
         } finally {
             server.shutdown()
         }
+    }
+
+    @Test
+    fun gatewayWebSocketAndHealthCheckShareConnectTimeoutDefault() {
+        assertEquals(
+            GatewayNetworkConfig.CONNECT_TIMEOUT_SECONDS,
+            GatewayNetworkConfig.HEALTH_TIMEOUT_SECONDS
+        )
+        assertTrue(GatewayNetworkConfig.CONNECT_TIMEOUT_SECONDS > 6)
     }
 }

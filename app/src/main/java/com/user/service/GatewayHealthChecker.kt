@@ -7,8 +7,13 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.util.concurrent.TimeUnit
 
+object GatewayNetworkConfig {
+    const val CONNECT_TIMEOUT_SECONDS: Long = 20
+    const val HEALTH_TIMEOUT_SECONDS: Long = CONNECT_TIMEOUT_SECONDS
+}
+
 class GatewayHealthChecker(
-    private val timeoutSeconds: Long = 10
+    private val timeoutSeconds: Long = GatewayNetworkConfig.HEALTH_TIMEOUT_SECONDS
 ) {
     suspend fun check(settings: BackendSettings, token: String): Result<Unit> =
         withContext(Dispatchers.IO) {

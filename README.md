@@ -95,7 +95,7 @@ app/src/main/java/com/user/
 ```text
 ClawMobile
   │
-  ├─── Chat/voice ──────────────────────> OpenClaw Gateway (:8000 / :18789)
+  ├─── Chat/voice ──────────────────────> OpenClaw Gateway (:18789)
   │                                           └── OpenClaw agent runtime
   │
   └─── Session control / monitoring ──> Orchestrator API (:8080)
@@ -123,19 +123,19 @@ Both connections run through Tailscale or LAN. They are independent — the Gate
 **Recommended — Tailscale**
 ```text
 Orchestrator URL: http://<tailscale-ip>:8080
-Gateway URL:      http://<tailscale-ip>:8000
+Gateway URL:      http://<tailscale-ip>:18789
 ```
 
 **SSH tunnel (emulator or different network)**
 ```bash
-ssh -N -L 8080:localhost:8080 -L 8000:localhost:8000 \
+ssh -N -L 8080:localhost:8080 -L 18789:localhost:18789 \
     -o ServerAliveInterval=30 USER@YOUR_SERVER_IP
 ```
 
 **Same WiFi**
 ```text
 Orchestrator URL: http://192.xxx.x.xx:8080
-Gateway URL:      http://192.xxx.x.xx:8000
+Gateway URL:      http://192.xxx.x.xx:18789
 ```
 
 ### Get Credentials
