@@ -5,7 +5,7 @@ A native Android client for [OpenClaw](https://github.com/openclaw/openclaw) and
 [![Release](https://img.shields.io/github/v/release/henrycode03/clawmobile?style=flat-square&label=release&color=555555)](https://github.com/henrycode03/clawmobile/releases)
 [![Downloads](https://img.shields.io/github/downloads/henrycode03/clawmobile/total?style=flat-square&label=downloads&color=4c9be8)](https://github.com/henrycode03/clawmobile/releases)
 [![License](https://img.shields.io/github/license/henrycode03/clawmobile?style=flat-square&color=blue)](https://github.com/henrycode03/clawmobile/blob/main/LICENSE)
-[![Platform](https://img.shields.io/badge/platform-Android%207.0+-00A884?style=flat-square)](https://developer.android.com/about/versions/nougat)
+[![Platform](https://img.shields.io/badge/platform-Android%2010+-00A884?style=flat-square)](https://developer.android.com/about/versions/10)
 
 ---
 
@@ -108,13 +108,17 @@ ClawMobile
 
 Both connections run through Tailscale or LAN. They are independent — the Gateway token is for chat; the Orchestrator URL + API key are for session control.
 
+### Gateway provider status
+
+ClawMobile can read provider metadata from Gateway/Hermes through `GET /providers/status` after the Gateway connection is configured. Android stores only the Gateway/Hermes connection settings needed to authenticate to your server. OpenAI, Anthropic, OpenRouter, and other third-party provider API keys stay server-side behind Gateway/Hermes and are not stored in the Android app.
+
 ## Quick Start
 
 ### Prerequisites
 
 - Android Studio Hedgehog (2023.1.1) or newer
 - JDK 17+
-- Android SDK API 24+ (Android 7.0+)
+- Android SDK API 29+ (Android 10+)
 - OpenClaw running locally or on a server
 - Orchestrator running (for session management features)
 

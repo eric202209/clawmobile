@@ -73,6 +73,7 @@ class ClawMobileApplication : Application() {
     val taskDao by lazy { database.taskDao() }
     val cachedResponseDao by lazy { database.cachedResponseDao() }
     val noteDao by lazy { database.noteDao() }
+    val providerStatusDao by lazy { database.providerStatusDao() }
 
     val repository by lazy {
         ChatRepository(

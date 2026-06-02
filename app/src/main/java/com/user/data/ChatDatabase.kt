@@ -18,9 +18,10 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         ApiRequest::class,
         ApiResponse::class,
         CachedResponse::class,
-        Note::class
+        Note::class,
+        GatewayProviderStatus::class
     ],
-    version = 10,
+    version = 11,
     exportSchema = true
 )
 abstract class ChatDatabase : RoomDatabase() {
@@ -31,6 +32,7 @@ abstract class ChatDatabase : RoomDatabase() {
     abstract fun apiRequestDao(): ApiRequestDao
     abstract fun cachedResponseDao(): CachedResponseDao
     abstract fun noteDao(): NoteDao
+    abstract fun providerStatusDao(): ProviderStatusDao
 
     companion object {
         @Volatile
@@ -57,6 +59,17 @@ abstract class ChatDatabase : RoomDatabase() {
             }
         }
 
+        val MIGRATION_10_11 = object : Migration(10, 11) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `gateway_provider_status` " +
+                        "(`id` TEXT NOT NULL, `type` TEXT NOT NULL, `displayName` TEXT NOT NULL, " +
+                        "`status` TEXT NOT NULL, `activeModel` TEXT, `lastLatencyMs` INTEGER, " +
+                        "`lastCheckedAt` INTEGER NOT NULL, PRIMARY KEY(`id`))"
+                )
+            }
+        }
+
         fun getDatabase(context: Context): ChatDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
@@ -64,7 +77,7 @@ abstract class ChatDatabase : RoomDatabase() {
                     ChatDatabase::class.java,
                     "openclaw_database"
                 )
-                    .addMigrations(MIGRATION_8_9, MIGRATION_9_10)
+                    .addMigrations(MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11)
                     .build()
                 INSTANCE = instance
                 instance
@@ -72,6 +85,5 @@ abstract class ChatDatabase : RoomDatabase() {
         }
     }
 }
-
 
 

@@ -6,22 +6,26 @@ import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import com.user.ClawMobileApplication
 import com.user.BuildConfig
 import com.user.R
 import com.user.data.AppPreferences
 import com.user.data.BackendSettings
+import com.user.data.GatewayProviderStatus
 import com.user.data.GitConnection
 import com.user.data.PrefsManager
 import com.user.data.previewSecret
 import com.user.databinding.ActivitySettingsBinding
 import com.user.service.GatewayHealthChecker
+import com.user.service.GatewayProviderStatusClient
 import com.user.service.OrchestratorApiClient
 import com.user.util.GatewaySettingsValidator
 import com.user.util.ValidationResult
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 private const val TAG = "SettingActivity"
 
@@ -55,6 +59,7 @@ class SettingsActivity : AppCompatActivity() {
     private lateinit var prefs: PrefsManager
     private lateinit var appPreferences: AppPreferences
     private val gatewayHealthChecker = GatewayHealthChecker()
+    private val providerStatusClient = GatewayProviderStatusClient()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -110,6 +115,10 @@ class SettingsActivity : AppCompatActivity() {
         binding.gatewayTestButton.setOnClickListener {
             testGatewayConnection()
         }
+        binding.providerStatusRefreshButton.setOnClickListener {
+            refreshProviderStatus()
+        }
+        loadCachedProviderStatus()
 
         // Auto-test connection when URL field loses focus (T021)
         binding.orchestratorServerUrlInput.setOnFocusChangeListener { _, hasFocus ->
@@ -306,6 +315,103 @@ class SettingsActivity : AppCompatActivity() {
         }
     }
 
+    private fun loadCachedProviderStatus() {
+        lifecycleScope.launch {
+            val providers = withContext(Dispatchers.IO) {
+                (application as ClawMobileApplication).providerStatusDao.getAll()
+            }
+            showProviderStatuses(providers)
+        }
+    }
+
+    private fun refreshProviderStatus() {
+        val settings = readGatewaySettings() ?: return
+        val token = binding.gatewayTokenInput.text?.toString()?.trim().orEmpty()
+        if (token.isBlank()) {
+            showProviderStatusMessage(getString(R.string.provider_status_missing_token), success = false)
+            return
+        }
+
+        binding.providerStatusRefreshButton.isEnabled = false
+        showProviderStatusMessage(getString(R.string.provider_status_refreshing), neutral = true)
+
+        lifecycleScope.launch {
+            val result = providerStatusClient.fetch(settings, token)
+            result.onSuccess { providers ->
+                val cachedProviders = withContext(Dispatchers.IO) {
+                    val dao = (application as ClawMobileApplication).providerStatusDao
+                    dao.upsertAll(providers)
+                    dao.deleteStale(System.currentTimeMillis() - PROVIDER_STATUS_STALE_MS)
+                    dao.getAll()
+                }
+                showProviderStatuses(cachedProviders)
+            }.onFailure { error ->
+                showProviderStatusMessage(
+                    error.message ?: getString(R.string.provider_status_failed),
+                    success = false
+                )
+            }
+            binding.providerStatusRefreshButton.isEnabled = true
+        }
+    }
+
+    private fun showProviderStatuses(providers: List<GatewayProviderStatus>) {
+        if (providers.isEmpty()) {
+            showProviderStatusMessage(getString(R.string.provider_status_empty), neutral = true)
+            return
+        }
+
+        binding.providerStatusSummary.visibility = View.VISIBLE
+        binding.providerStatusSummary.text = resources.getQuantityString(
+            R.plurals.provider_status_summary,
+            providers.size,
+            providers.size
+        )
+        binding.providerStatusSummary.setTextColor(ContextCompat.getColor(this, R.color.text_secondary))
+        binding.providerStatusList.visibility = View.VISIBLE
+        binding.providerStatusList.text = providers.joinToString("\n\n") { provider ->
+            val model = provider.activeModel ?: getString(R.string.provider_status_model_unknown)
+            val latency = provider.lastLatencyMs?.let {
+                getString(R.string.provider_status_latency_ms, it)
+            } ?: getString(R.string.provider_status_latency_unknown)
+            val checked = formatProviderCheckedAt(provider.lastCheckedAt)
+            getString(
+                R.string.provider_status_row,
+                provider.displayName,
+                provider.status,
+                model,
+                latency,
+                checked
+            )
+        }
+        binding.providerStatusList.setTextColor(ContextCompat.getColor(this, R.color.text_primary))
+    }
+
+    private fun showProviderStatusMessage(
+        message: String,
+        success: Boolean? = null,
+        neutral: Boolean = false
+    ) {
+        binding.providerStatusSummary.visibility = View.VISIBLE
+        binding.providerStatusSummary.text = message
+        val colorRes = when {
+            neutral -> R.color.timestamp_text
+            success == true -> R.color.status_completed
+            else -> R.color.status_failed
+        }
+        binding.providerStatusSummary.setTextColor(ContextCompat.getColor(this, colorRes))
+        binding.providerStatusList.visibility = View.GONE
+    }
+
+    private fun formatProviderCheckedAt(checkedAtMillis: Long): String {
+        val elapsedMinutes = ((System.currentTimeMillis() - checkedAtMillis) / 60_000).coerceAtLeast(0)
+        return when {
+            elapsedMinutes == 0L -> getString(R.string.provider_status_checked_now)
+            elapsedMinutes == 1L -> getString(R.string.provider_status_checked_one_minute)
+            else -> getString(R.string.provider_status_checked_minutes, elapsedMinutes)
+        }
+    }
+
     private fun showGatewayTestStatus(message: String, success: Boolean? = null, neutral: Boolean = false) {
         binding.gatewayTestStatus.visibility = View.VISIBLE
         binding.gatewayTestStatus.text = message
@@ -359,5 +465,9 @@ class SettingsActivity : AppCompatActivity() {
             4. Make sure firewall allows port 8080: sudo ufw allow 8080/tcp
         """.trimIndent()
         Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+    }
+
+    companion object {
+        private const val PROVIDER_STATUS_STALE_MS = 7L * 24 * 60 * 60 * 1000
     }
 }
