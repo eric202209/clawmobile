@@ -241,7 +241,7 @@ data class ProjectTaskWorkspaceSummary(
     @SerializedName("task_id")
     val taskId: Int = 0,
     val title: String = "",
-    @SerializedName("task_subfolder")
+    @SerializedName(value = "subfolder", alternate = ["task_subfolder"])
     val taskSubfolder: String = "",
     @SerializedName("workspace_status")
     val workspaceStatus: String? = null,
@@ -410,7 +410,11 @@ data class MobileCheckpoint(
     @SerializedName("checkpoint_type")
     val checkpointType: String? = null,
     val description: String? = null,
-    val resumable: Boolean = true
+    @SerializedName("task_id")
+    val taskId: Int? = null,
+    val resumable: Boolean = true,
+    @SerializedName("resume_reason")
+    val resumeReason: String? = null
 )
 
 data class MobileCheckpointListResponse(
@@ -471,17 +475,31 @@ data class InterventionRequest(
     val id: Int = 0,
     @SerializedName("session_id")
     val sessionId: Int = 0,
+    @SerializedName("task_id")
+    val taskId: Int? = null,
+    @SerializedName("project_id")
+    val projectId: Int? = null,
     @SerializedName("intervention_type")
     val interventionType: String = "guidance",
-    val prompt: String = "",
-    val status: String = "pending",
-    val reply: String? = null,
     @SerializedName("initiated_by")
     val initiatedBy: String = "ai",
+    val prompt: String = "",
+    @SerializedName("context_snapshot")
+    val contextSnapshot: Map<String, Any>? = null,
+    val status: String = "pending",
+    @SerializedName(value = "operator_reply", alternate = ["reply"])
+    val operatorReply: String? = null,
+    @SerializedName("operator_id")
+    val operatorId: String? = null,
     @SerializedName("created_at")
     val createdAt: String? = null,
-    @SerializedName("resolved_at")
-    val resolvedAt: String? = null
+    @SerializedName(value = "replied_at", alternate = ["resolved_at"])
+    val repliedAt: String? = null,
+    @SerializedName("expires_at")
+    val expiresAt: String? = null,
+    @SerializedName("updated_at")
+    val updatedAt: String? = null,
+    val message: String? = null
 )
 
 data class InterventionListResponse(
@@ -494,14 +512,27 @@ data class ExecutionFailureSummaryResponse(
     val sessionId: Int = 0,
     val summary: String = "",
     @SerializedName("operator_feedback")
-    val operatorFeedback: String? = null
+    val operatorFeedback: String? = null,
+    @SerializedName("replan_planning_session_id")
+    val replanPlanningSessionId: Int? = null,
+    @SerializedName("replan_planning_session_status")
+    val replanPlanningSessionStatus: String? = null,
+    @SerializedName("replan_planning_session_title")
+    val replanPlanningSessionTitle: String? = null,
+    val diagnostics: Map<String, Any>? = null,
+    val message: String? = null
 )
 
 data class ReplanResponse(
-    @SerializedName("new_session_id")
-    val newSessionId: Int = 0,
+    @SerializedName(value = "planning_session_id", alternate = ["new_session_id"])
+    val planningSessionId: Int = 0,
+    @SerializedName("session_id")
+    val sessionId: Int = 0,
     val message: String = ""
-)
+) {
+    val newSessionId: Int
+        get() = planningSessionId
+}
 
 /**
  * Task statistics for project status response

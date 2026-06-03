@@ -586,7 +586,7 @@ class SessionDetailActivity : AppCompatActivity() {
             }
             client.triggerReplan(sessionId).onSuccess { result ->
                 val msg = if (result.newSessionId > 0) {
-                    "Replan started — session #${result.newSessionId} created"
+                    "Replan started - planning session #${result.newSessionId} created"
                 } else {
                     result.message.ifBlank { "Replan triggered" }
                 }
