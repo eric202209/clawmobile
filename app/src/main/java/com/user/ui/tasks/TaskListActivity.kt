@@ -113,14 +113,6 @@ class TaskListActivity : AppCompatActivity() {
         binding.chipBrowseSessions.setOnClickListener { scrollToSection(binding.executionCard) }
         binding.chipBrowseProjects.setOnClickListener { scrollToSection(binding.projectsCard) }
         binding.chipBrowseTasks.setOnClickListener { scrollToSection(binding.tasksSectionHeader) }
-        binding.chipGatewayDashboard.setOnClickListener {
-            startActivity(
-                android.content.Intent(
-                    this,
-                    com.user.ui.activities.GatewayDashboardActivity::class.java
-                )
-            )
-        }
         binding.latestFailureView.setOnClickListener { openLatestFailure() }
         binding.runningSessionView.setOnClickListener { openRunningSession() }
         binding.resumableSessionView.setOnClickListener { openResumableSession() }

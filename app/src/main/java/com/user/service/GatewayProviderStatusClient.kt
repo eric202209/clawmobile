@@ -32,6 +32,7 @@ class GatewayProviderStatusClient(
                 )
 
                 var lastFailure: Throwable? = null
+                var lastHttpFailure: IOException? = null
                 for ((index, url) in urls.withIndex()) {
                     val request = Request.Builder()
                         .url(url)
@@ -43,9 +44,18 @@ class GatewayProviderStatusClient(
                         when {
                             response.code == 401 || response.code == 403 ->
                                 throw GatewayProviderStatusException.Auth("Gateway auth failed (${response.code})")
-                            response.code == 404 && index == 0 -> Unit
-                            !response.isSuccessful ->
-                                throw IOException("Gateway provider status failed with HTTP ${response.code}")
+                            response.code == 404 -> {
+                                lastHttpFailure = IOException(
+                                    "Provider status endpoint returned HTTP 404 at $url"
+                                )
+                            }
+                            !response.isSuccessful -> {
+                                lastHttpFailure = IOException(
+                                    "Provider status endpoint returned HTTP ${response.code} at $url"
+                                )
+                                if (index == urls.lastIndex) throw lastHttpFailure
+                                    ?: IOException("Provider status endpoint failed at $url")
+                            }
                             else -> {
                                 try {
                                     return@runCatching parse(body, nowMillis())
@@ -57,7 +67,8 @@ class GatewayProviderStatusClient(
                         }
                     }
                 }
-                throw lastFailure ?: IOException("Gateway provider status endpoint was not found")
+                throw lastFailure ?: lastHttpFailure
+                    ?: IOException("Gateway provider status endpoint was not found")
             }
         }
 

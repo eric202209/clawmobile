@@ -364,7 +364,6 @@
     <string name="dashboard_health_healthy">Gateway reachable</string>
     <string name="dashboard_health_unreachable">Gateway unreachable</string>
     <string name="dashboard_stale_cache">Showing cached data. Pull to refresh.</string>
-    <string name="main_menu_dashboard">Dashboard</string>
 
     <!-- Phase 2.4: Gateway Alerts -->
     <string name="gateway_alert_channel">Gateway Alerts</string>
