@@ -25,21 +25,31 @@ class GatewayProviderStatusClient(
                     .readTimeout(timeoutSeconds, TimeUnit.SECONDS)
                     .callTimeout(timeoutSeconds, TimeUnit.SECONDS)
                     .build()
-                val request = Request.Builder()
-                    .url("${settings.baseUrl.trimEnd('/')}/providers/status")
-                    .header("Authorization", "Bearer $token")
-                    .build()
+                val baseUrl = settings.baseUrl.trimEnd('/')
+                val urls = listOf(
+                    "$baseUrl/providers/status",
+                    "$baseUrl/api/v1/mobile/providers/status"
+                )
 
-                client.newCall(request).execute().use { response ->
-                    val body = response.body?.string().orEmpty()
-                    when {
-                        response.code == 401 || response.code == 403 ->
-                            throw GatewayProviderStatusException.Auth("Gateway auth failed (${response.code})")
-                        !response.isSuccessful ->
-                            throw IOException("Gateway provider status failed with HTTP ${response.code}")
-                        else -> parse(body, nowMillis())
+                for ((index, url) in urls.withIndex()) {
+                    val request = Request.Builder()
+                        .url(url)
+                        .header("Authorization", "Bearer $token")
+                        .build()
+
+                    client.newCall(request).execute().use { response ->
+                        val body = response.body?.string().orEmpty()
+                        when {
+                            response.code == 401 || response.code == 403 ->
+                                throw GatewayProviderStatusException.Auth("Gateway auth failed (${response.code})")
+                            response.code == 404 && index == 0 -> Unit
+                            !response.isSuccessful ->
+                                throw IOException("Gateway provider status failed with HTTP ${response.code}")
+                            else -> return@runCatching parse(body, nowMillis())
+                        }
                     }
                 }
+                throw IOException("Gateway provider status endpoint was not found")
             }
         }
 

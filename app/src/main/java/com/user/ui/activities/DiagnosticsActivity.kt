@@ -8,6 +8,8 @@ import android.widget.ScrollView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.work.WorkInfo
+import androidx.work.WorkManager
 import com.google.android.material.appbar.MaterialToolbar
 import com.user.R
 
@@ -29,12 +31,25 @@ class DiagnosticsActivity : AppCompatActivity() {
 
         val memInfo = Debug.MemoryInfo().also { Debug.getMemoryInfo(it) }
         val dbSize = getDatabasePath("openclaw_database").length()
+        val workManager = WorkManager.getInstance(this)
+        val workerNames = listOf(
+            com.user.service.ProviderStatusWorker.WORK_NAME,
+            com.user.service.StatusMonitorWorker.WORK_NAME,
+            com.user.service.InterventionPollService.WORK_NAME,
+            com.user.service.PermissionPollService.WORK_NAME
+        )
+        val workerFailures = workerNames.sumOf { name ->
+            runCatching {
+                workManager.getWorkInfosForUniqueWork(name).get()
+                    .count { it.state == WorkInfo.State.FAILED }
+            }.getOrDefault(0)
+        }
         val rows = listOf(
             "Room DB: ${dbSize / 1024} KB",
             "Dalvik heap: ${memInfo.dalvikPss} KB",
             "Native heap: ${memInfo.nativePss} KB",
             "Other memory: ${memInfo.otherPss} KB",
-            "WorkManager failures: available in Phase 2",
+            "WorkManager failures: $workerFailures",
             "WebSocket reconnects: available in Phase 3"
         )
 

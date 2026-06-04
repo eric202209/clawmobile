@@ -12,6 +12,9 @@ import com.user.data.PrefsManager
 import com.user.repository.ChatRepository
 import com.user.service.InterventionPollService
 import com.user.service.PermissionPollService
+import com.user.service.ProviderStatusWorker
+import com.user.service.RoomMaintenanceWorker
+import com.user.service.StatusMonitorWorker
 import java.util.concurrent.TimeUnit
 
 class ClawMobileApplication : Application() {
@@ -22,6 +25,9 @@ class ClawMobileApplication : Application() {
         PDFBoxResourceLoader.init(this)
         schedulePermissionPolling()
         scheduleInterventionPolling()
+        scheduleProviderStatusRefresh()
+        scheduleStatusMonitor()
+        scheduleRoomMaintenance()
     }
 
     private fun enableDebugStrictMode() {
@@ -74,6 +80,48 @@ class ClawMobileApplication : Application() {
     val cachedResponseDao by lazy { database.cachedResponseDao() }
     val noteDao by lazy { database.noteDao() }
     val providerStatusDao by lazy { database.providerStatusDao() }
+    val gatewaySessionDao by lazy { database.gatewaySessionDao() }
+
+    private fun scheduleProviderStatusRefresh() {
+        val request = PeriodicWorkRequestBuilder<ProviderStatusWorker>(
+            30, TimeUnit.MINUTES
+        ).setConstraints(
+            androidx.work.Constraints.Builder()
+                .setRequiredNetworkType(androidx.work.NetworkType.CONNECTED)
+                .build()
+        ).build()
+        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+            ProviderStatusWorker.WORK_NAME,
+            ExistingPeriodicWorkPolicy.KEEP,
+            request
+        )
+    }
+
+    private fun scheduleStatusMonitor() {
+        val request = PeriodicWorkRequestBuilder<StatusMonitorWorker>(
+            30, TimeUnit.MINUTES
+        ).setConstraints(
+            androidx.work.Constraints.Builder()
+                .setRequiredNetworkType(androidx.work.NetworkType.CONNECTED)
+                .build()
+        ).build()
+        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+            StatusMonitorWorker.WORK_NAME,
+            ExistingPeriodicWorkPolicy.KEEP,
+            request
+        )
+    }
+
+    private fun scheduleRoomMaintenance() {
+        val request = PeriodicWorkRequestBuilder<RoomMaintenanceWorker>(
+            24, TimeUnit.HOURS
+        ).build()
+        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+            RoomMaintenanceWorker.WORK_NAME,
+            ExistingPeriodicWorkPolicy.KEEP,
+            request
+        )
+    }
 
     val repository by lazy {
         ChatRepository(

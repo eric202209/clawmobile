@@ -110,6 +110,7 @@ dependencies {
     implementation(libs.work.runtime)
     implementation(libs.datastore.preferences)
     implementation(libs.snakeyaml)
+    implementation(libs.swiperefreshlayout)
 
     testImplementation(libs.junit)
     testImplementation(libs.coroutines.test)
@@ -119,5 +120,6 @@ dependencies {
     androidTestImplementation(libs.androidx.test.core)
     androidTestImplementation(libs.coroutines.test)
     androidTestImplementation(libs.espresso)
+    androidTestImplementation(libs.room.testing)
 }
 

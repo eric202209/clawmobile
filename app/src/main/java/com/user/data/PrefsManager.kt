@@ -143,6 +143,15 @@ class PrefsManager(context: Context) {
         prefs.edit().putString(KEY_RECENT_INPUT_HISTORY, trimmed.joinToString("\n")).apply()
     }
 
+    // ── Phase 2.4: Gateway Alerts ────────────────────────────────
+    var gatewayAlertsEnabled: Boolean
+        get() = prefs.getBoolean("gateway_alerts_enabled", false)
+        set(value) = prefs.edit().putBoolean("gateway_alerts_enabled", value).apply()
+
+    var lastGatewayHealthy: Boolean
+        get() = prefs.getBoolean("last_gateway_healthy", true)
+        set(value) = prefs.edit().putBoolean("last_gateway_healthy", value).apply()
+
     // ── Intervention Polling ──────────────────────────────────
     var lastKnownInterventionSessionIds: Set<Int>
         get() = (prefs.getStringSet("last_known_intervention_session_ids", emptySet()) ?: emptySet())

@@ -358,6 +358,28 @@
     <string name="workspace_review_success">Review submitted</string>
     <string name="workspace_review_failed">Could not submit review</string>
 
+    <!-- Phase 2.2: Gateway Dashboard -->
+    <string name="dashboard_title">Gateway Dashboard</string>
+    <string name="dashboard_gateway_section">Gateway</string>
+    <string name="dashboard_health_healthy">Gateway reachable</string>
+    <string name="dashboard_health_unreachable">Gateway unreachable</string>
+    <string name="dashboard_stale_cache">Showing cached data. Pull to refresh.</string>
+    <string name="main_menu_dashboard">Dashboard</string>
+
+    <!-- Phase 2.4: Gateway Alerts -->
+    <string name="gateway_alert_channel">Gateway Alerts</string>
+    <string name="gateway_alert_down_title">Gateway Unreachable</string>
+    <string name="gateway_alert_down_body">The Gateway backend stopped responding. Tap to check.</string>
+    <string name="settings_alerts_title">Alerts</string>
+    <string name="settings_alerts_gateway_toggle">Notify when Gateway backend fails</string>
+
+    <!-- Phase 2.3: Sessions enhancements -->
+    <string name="sessions_load_more">Load more</string>
+    <string name="sessions_filter_project">Project: %1$s</string>
+    <string name="sessions_filter_all_projects">All projects</string>
+    <string name="session_summary_progress">Task progress</string>
+    <string name="session_summary_recent_logs">Recent logs</string>
+
     <!-- Connection status -->
     <string name="connection_status_connected">Connected</string>
     <string name="connection_status_disconnected">Disconnected</string>

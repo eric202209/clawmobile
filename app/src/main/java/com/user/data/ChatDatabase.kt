@@ -19,9 +19,10 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         ApiResponse::class,
         CachedResponse::class,
         Note::class,
-        GatewayProviderStatus::class
+        GatewayProviderStatus::class,
+        GatewaySession::class
     ],
-    version = 11,
+    version = 12,
     exportSchema = true
 )
 abstract class ChatDatabase : RoomDatabase() {
@@ -33,6 +34,7 @@ abstract class ChatDatabase : RoomDatabase() {
     abstract fun cachedResponseDao(): CachedResponseDao
     abstract fun noteDao(): NoteDao
     abstract fun providerStatusDao(): ProviderStatusDao
+    abstract fun gatewaySessionDao(): GatewaySessionDao
 
     companion object {
         @Volatile
@@ -70,6 +72,20 @@ abstract class ChatDatabase : RoomDatabase() {
             }
         }
 
+        val MIGRATION_11_12 = object : Migration(11, 12) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `gateway_sessions` " +
+                        "(`id` TEXT NOT NULL, `gatewayId` TEXT NOT NULL, `name` TEXT NOT NULL, " +
+                        "`projectId` TEXT, " +
+                        "`startedAt` INTEGER NOT NULL, `status` TEXT NOT NULL, " +
+                        "`isActive` INTEGER NOT NULL, " +
+                        "`messageCount` INTEGER NOT NULL, `lastActivity` INTEGER NOT NULL, " +
+                        "`cachedAt` INTEGER NOT NULL, PRIMARY KEY(`id`))"
+                )
+            }
+        }
+
         fun getDatabase(context: Context): ChatDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
@@ -77,7 +93,7 @@ abstract class ChatDatabase : RoomDatabase() {
                     ChatDatabase::class.java,
                     "openclaw_database"
                 )
-                    .addMigrations(MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11)
+                    .addMigrations(MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12)
                     .build()
                 INSTANCE = instance
                 instance
@@ -85,5 +101,4 @@ abstract class ChatDatabase : RoomDatabase() {
         }
     }
 }
-
 

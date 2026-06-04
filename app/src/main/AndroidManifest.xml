@@ -46,6 +46,8 @@
         <activity android:name=".ui.activities.NotesActivity" android:exported="false" />
         <activity android:name=".ui.activities.NoteEditorActivity" android:exported="false" />
         <activity android:name=".ui.permissions.PermissionsActivity" android:exported="false" />
+        <activity android:name=".ui.activities.GatewayDashboardActivity" android:exported="false" />
+        <activity android:name=".ui.activities.GatewaySessionSummaryActivity" android:exported="false" />
 
         <receiver
             android:name=".service.PermissionActionReceiver"

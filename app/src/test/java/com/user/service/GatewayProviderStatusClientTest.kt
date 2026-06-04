@@ -169,6 +169,36 @@ class GatewayProviderStatusClientTest {
         }
     }
 
+    @Test
+    fun fetchFallsBackToOrchestratorMobileProviderStatusEndpoint() = runTest {
+        val server = MockWebServer()
+        server.enqueue(MockResponse().setResponseCode(404).setBody("Not found"))
+        server.enqueue(
+            MockResponse()
+                .setResponseCode(200)
+                .setBody("""{"providers":[{"id":"openclaw","type":"local","displayName":"OpenClaw","status":"ready"}]}""")
+        )
+        server.start()
+        try {
+            val result = GatewayProviderStatusClient(timeoutSeconds = 1, nowMillis = { CHECKED_AT }).fetch(
+                settings = BackendSettings(
+                    host = server.hostName,
+                    port = server.port,
+                    token = "gateway-token",
+                    useHttps = false
+                ),
+                token = "gateway-token"
+            )
+
+            assertTrue(result.isSuccess)
+            assertEquals("openclaw", result.getOrThrow().first().id)
+            assertEquals("/providers/status", server.takeRequest().path)
+            assertEquals("/api/v1/mobile/providers/status", server.takeRequest().path)
+        } finally {
+            server.shutdown()
+        }
+    }
+
     companion object {
         private const val CHECKED_AT = 1_700_000_000_000L
     }

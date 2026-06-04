@@ -109,6 +109,8 @@ class SettingsActivity : AppCompatActivity() {
         // Always show Orchestrator section so users can configure it
         binding.orchestratorSection.visibility = android.view.View.VISIBLE
 
+        binding.gatewayAlertsSwitch.isChecked = prefs.gatewayAlertsEnabled
+
         binding.orchestratorTestButton.setOnClickListener {
             testOrchestratorConnection()
         }
@@ -213,6 +215,7 @@ class SettingsActivity : AppCompatActivity() {
                     val savedApiKey = prefs.orchestratorApiKey
                     Log.d(TAG, "VERIFIED SAVED - Url: '$savedOrchUrl', ApiKey: '${previewSecret(savedApiKey)}'")
 
+                    prefs.gatewayAlertsEnabled = binding.gatewayAlertsSwitch.isChecked
                     Toast.makeText(this, "Settings saved! Reconnecting...", Toast.LENGTH_LONG).show()
                     finish()
                 }

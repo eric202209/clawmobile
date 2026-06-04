@@ -461,13 +461,23 @@ class OrchestratorApiClient(
         }
     }
 
-    suspend fun listSessions(status: String? = null): Result<List<MobileSessionListItem>> = withContext(Dispatchers.IO) {
+    suspend fun listSessions(
+        status: String? = null,
+        projectId: String? = null,
+        limit: Int = 50,
+        offset: Int = 0
+    ): Result<List<MobileSessionListItem>> = withContext(Dispatchers.IO) {
         try {
             val path = buildString {
                 append("sessions")
-                if (!status.isNullOrBlank()) {
-                    append("?status=")
-                    append(status)
+                val params = mutableListOf<String>()
+                if (!status.isNullOrBlank()) params.add("status=$status")
+                if (!projectId.isNullOrBlank()) params.add("project_id=$projectId")
+                params.add("limit=$limit")
+                params.add("offset=$offset")
+                if (params.isNotEmpty()) {
+                    append("?")
+                    append(params.joinToString("&"))
                 }
             }
             val url = buildMobileUrl(path)
