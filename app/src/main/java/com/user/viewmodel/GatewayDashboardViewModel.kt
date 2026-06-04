@@ -6,7 +6,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.user.ClawMobileApplication
-import com.user.data.AppPreferences
+import com.user.data.GatewaySettingsResolver
 import com.user.service.GatewayHealthChecker
 import com.user.service.GatewayProviderStatusClient
 import com.user.service.GatewayProviderStatusException
@@ -14,7 +14,6 @@ import kotlinx.coroutines.launch
 
 class GatewayDashboardViewModel(application: Application) : AndroidViewModel(application) {
     private val app = application as ClawMobileApplication
-    private val appPreferences = AppPreferences(application)
     private val healthChecker = GatewayHealthChecker()
     private val providerStatusClient = GatewayProviderStatusClient()
 
@@ -43,7 +42,7 @@ class GatewayDashboardViewModel(application: Application) : AndroidViewModel(app
         if (_state.value is DashboardUiState.Refreshing) return
         viewModelScope.launch {
             _state.value = DashboardUiState.Refreshing
-            val settings = appPreferences.getBackendSettings()
+            val settings = GatewaySettingsResolver.resolve(getApplication())
             val token = settings.token
 
             if (token.isEmpty()) {

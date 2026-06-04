@@ -10,7 +10,7 @@ import androidx.core.app.NotificationCompat
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.user.R
-import com.user.data.AppPreferences
+import com.user.data.GatewaySettingsResolver
 import com.user.data.PrefsManager
 import com.user.ui.activities.GatewayDashboardActivity
 
@@ -25,7 +25,7 @@ class StatusMonitorWorker(
 
     override suspend fun doWork(): Result {
         if (!prefs.gatewayAlertsEnabled) return Result.success()
-        val settings = AppPreferences(applicationContext).getBackendSettings()
+        val settings = GatewaySettingsResolver.resolve(applicationContext)
         if (settings.token.isEmpty()) return Result.success()
 
         val wasHealthy = prefs.lastGatewayHealthy

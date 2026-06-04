@@ -199,6 +199,36 @@ class GatewayProviderStatusClientTest {
         }
     }
 
+    @Test
+    fun fetchFallsBackWhenFirstEndpointReturnsHealthPayload() = runTest {
+        val server = MockWebServer()
+        server.enqueue(MockResponse().setResponseCode(200).setBody("""{"status":"healthy"}"""))
+        server.enqueue(
+            MockResponse()
+                .setResponseCode(200)
+                .setBody("""{"providers":[{"id":"hermes","type":"agent","displayName":"Hermes","status":"ready"}]}""")
+        )
+        server.start()
+        try {
+            val result = GatewayProviderStatusClient(timeoutSeconds = 1, nowMillis = { CHECKED_AT }).fetch(
+                settings = BackendSettings(
+                    host = server.hostName,
+                    port = server.port,
+                    token = "gateway-token",
+                    useHttps = false
+                ),
+                token = "gateway-token"
+            )
+
+            assertTrue(result.isSuccess)
+            assertEquals("hermes", result.getOrThrow().first().id)
+            assertEquals("/providers/status", server.takeRequest().path)
+            assertEquals("/api/v1/mobile/providers/status", server.takeRequest().path)
+        } finally {
+            server.shutdown()
+        }
+    }
+
     companion object {
         private const val CHECKED_AT = 1_700_000_000_000L
     }

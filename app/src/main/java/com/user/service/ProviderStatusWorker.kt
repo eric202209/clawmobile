@@ -4,7 +4,7 @@ import android.content.Context
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.user.ClawMobileApplication
-import com.user.data.AppPreferences
+import com.user.data.GatewaySettingsResolver
 
 class ProviderStatusWorker(
     ctx: Context,
@@ -13,7 +13,7 @@ class ProviderStatusWorker(
 
     override suspend fun doWork(): Result {
         val app = applicationContext as ClawMobileApplication
-        val settings = AppPreferences(applicationContext).getBackendSettings()
+        val settings = GatewaySettingsResolver.resolve(applicationContext)
         if (settings.token.isEmpty()) return Result.success()
 
         return GatewayProviderStatusClient(timeoutSeconds = 10)

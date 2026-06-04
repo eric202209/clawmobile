@@ -31,6 +31,7 @@ class GatewayProviderStatusClient(
                     "$baseUrl/api/v1/mobile/providers/status"
                 )
 
+                var lastFailure: Throwable? = null
                 for ((index, url) in urls.withIndex()) {
                     val request = Request.Builder()
                         .url(url)
@@ -45,11 +46,18 @@ class GatewayProviderStatusClient(
                             response.code == 404 && index == 0 -> Unit
                             !response.isSuccessful ->
                                 throw IOException("Gateway provider status failed with HTTP ${response.code}")
-                            else -> return@runCatching parse(body, nowMillis())
+                            else -> {
+                                try {
+                                    return@runCatching parse(body, nowMillis())
+                                } catch (e: GatewayProviderStatusException.Malformed) {
+                                    if (index == urls.lastIndex) throw e
+                                    lastFailure = e
+                                }
+                            }
                         }
                     }
                 }
-                throw IOException("Gateway provider status endpoint was not found")
+                throw lastFailure ?: IOException("Gateway provider status endpoint was not found")
             }
         }
 
