@@ -13,6 +13,7 @@ import com.user.R
 import com.user.data.AppPreferences
 import com.user.data.BackendSettings
 import com.user.data.GatewayProviderStatus
+import com.user.data.GatewaySettingsResolver
 import com.user.data.GitConnection
 import com.user.data.PrefsManager
 import com.user.data.previewSecret
@@ -330,7 +331,7 @@ class SettingsActivity : AppCompatActivity() {
     private fun refreshProviderStatus() {
         val settings = readGatewaySettings() ?: return
         val token = binding.gatewayTokenInput.text?.toString()?.trim().orEmpty()
-        if (token.isBlank()) {
+        if (token.isBlank() && binding.orchestratorApiKeyInput.text?.toString()?.trim().isNullOrBlank()) {
             showProviderStatusMessage(getString(R.string.provider_status_missing_token), success = false)
             return
         }
@@ -339,7 +340,12 @@ class SettingsActivity : AppCompatActivity() {
         showProviderStatusMessage(getString(R.string.provider_status_refreshing), neutral = true)
 
         lifecycleScope.launch {
-            val result = providerStatusClient.fetch(settings, token)
+            val manualGatewaySource = settings.copy(token = token)
+            val savedSources = GatewaySettingsResolver.resolveProviderStatusSources(this@SettingsActivity)
+            val sources = (listOf(manualGatewaySource) + savedSources)
+                .filter { it.token.isNotBlank() }
+                .distinctBy { "${it.baseUrl}|${it.token}" }
+            val result = providerStatusClient.fetchAny(sources)
             result.onSuccess { providers ->
                 val cachedProviders = withContext(Dispatchers.IO) {
                     val dao = (application as ClawMobileApplication).providerStatusDao

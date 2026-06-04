@@ -17,6 +17,18 @@ class GatewayProviderStatusClient(
     private val timeoutSeconds: Long = GatewayNetworkConfig.HEALTH_TIMEOUT_SECONDS,
     private val nowMillis: () -> Long = { System.currentTimeMillis() }
 ) {
+    suspend fun fetchAny(settingsList: List<BackendSettings>): Result<List<GatewayProviderStatus>> {
+        var lastFailure: Throwable? = null
+        settingsList.filter { it.token.isNotBlank() }.forEach { settings ->
+            val result = fetch(settings, settings.token)
+            if (result.isSuccess) return result
+            lastFailure = result.exceptionOrNull()
+        }
+        return Result.failure(
+            lastFailure ?: IOException("No Gateway-compatible provider status source is configured")
+        )
+    }
+
     suspend fun fetch(settings: BackendSettings, token: String): Result<List<GatewayProviderStatus>> =
         withContext(Dispatchers.IO) {
             runCatching {

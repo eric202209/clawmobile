@@ -14,4 +14,19 @@ object GatewaySettingsResolver {
         val fallbackSettings = AppPreferences.parseUrl(prefs.serverUrl)
         return fallbackSettings.copy(token = fallbackToken)
     }
+
+    suspend fun resolveProviderStatusSources(context: Context): List<BackendSettings> {
+        val prefs = PrefsManager(context)
+        val sources = mutableListOf<BackendSettings>()
+
+        resolve(context).takeIf { it.token.isNotBlank() }?.let { sources += it }
+
+        val orchestratorToken = prefs.orchestratorApiKey.ifBlank { prefs.gatewayToken }
+        if (prefs.orchestratorServerUrl.isNotBlank() && orchestratorToken.isNotBlank()) {
+            sources += AppPreferences.parseUrl(prefs.orchestratorServerUrl)
+                .copy(token = orchestratorToken)
+        }
+
+        return sources.distinctBy { "${it.baseUrl}|${it.token}" }
+    }
 }

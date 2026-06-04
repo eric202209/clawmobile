@@ -229,6 +229,46 @@ class GatewayProviderStatusClientTest {
         }
     }
 
+    @Test
+    fun fetchAnyTriesNextConfiguredSourceAfter404() = runTest {
+        val missingGateway = MockWebServer()
+        missingGateway.enqueue(MockResponse().setResponseCode(404).setBody("Not found"))
+        missingGateway.enqueue(MockResponse().setResponseCode(404).setBody("Not found"))
+        missingGateway.start()
+
+        val orchestrator = MockWebServer()
+        orchestrator.enqueue(
+            MockResponse()
+                .setResponseCode(200)
+                .setBody("""{"providers":[{"id":"local_openclaw","type":"agent","displayName":"Local OpenClaw","status":"ready"}]}""")
+        )
+        orchestrator.start()
+        try {
+            val result = GatewayProviderStatusClient(timeoutSeconds = 1, nowMillis = { CHECKED_AT }).fetchAny(
+                listOf(
+                    BackendSettings(
+                        host = missingGateway.hostName,
+                        port = missingGateway.port,
+                        token = "gateway-token",
+                        useHttps = false
+                    ),
+                    BackendSettings(
+                        host = orchestrator.hostName,
+                        port = orchestrator.port,
+                        token = "orchestrator-token",
+                        useHttps = false
+                    )
+                )
+            )
+
+            assertTrue(result.isSuccess)
+            assertEquals("local_openclaw", result.getOrThrow().first().id)
+        } finally {
+            missingGateway.shutdown()
+            orchestrator.shutdown()
+        }
+    }
+
     companion object {
         private const val CHECKED_AT = 1_700_000_000_000L
     }

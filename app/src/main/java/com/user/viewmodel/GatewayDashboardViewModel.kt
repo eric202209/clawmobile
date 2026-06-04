@@ -42,10 +42,9 @@ class GatewayDashboardViewModel(application: Application) : AndroidViewModel(app
         if (_state.value is DashboardUiState.Refreshing) return
         viewModelScope.launch {
             _state.value = DashboardUiState.Refreshing
-            val settings = GatewaySettingsResolver.resolve(getApplication())
-            val token = settings.token
+            val sources = GatewaySettingsResolver.resolveProviderStatusSources(getApplication())
 
-            if (token.isEmpty()) {
+            if (sources.isEmpty()) {
                 _state.value = DashboardUiState.Error(
                     message = "No Gateway token configured.",
                     isAuth = true
@@ -53,9 +52,10 @@ class GatewayDashboardViewModel(application: Application) : AndroidViewModel(app
                 return@launch
             }
 
-            val isHealthy = healthChecker.check(settings, token).isSuccess
+            val primarySource = sources.first()
+            val isHealthy = healthChecker.check(primarySource, primarySource.token).isSuccess
 
-            providerStatusClient.fetch(settings, token)
+            providerStatusClient.fetchAny(sources)
                 .onSuccess { providers ->
                     app.providerStatusDao.upsertAll(providers)
                     _state.value = DashboardUiState.Ready(

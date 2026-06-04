@@ -52,8 +52,8 @@
     <string name="settings_gateway_token_hint">Paste your OpenClaw API key</string>
     <string name="settings_gateway_token_desc">Usually the same API key used by OpenClaw Gateway and Orchestrator. It is required before chat can connect.</string>
 
-    <string name="provider_status_title">Gateway Provider Status</string>
-    <string name="provider_status_desc">Provider metadata comes from Gateway/Hermes. Third-party provider API keys stay on the server, not on Android.</string>
+    <string name="provider_status_title">Backend Provider Status</string>
+    <string name="provider_status_desc">Shows the server-side agent and model providers available behind a Gateway-compatible backend, such as OpenClaw or Hermes. Third-party provider API keys stay on the server, not on Android.</string>
     <string name="provider_status_refresh">Refresh Status</string>
     <string name="provider_status_empty">No provider status cached yet.</string>
     <string name="provider_status_refreshing">Refreshing provider status…</string>
@@ -67,8 +67,8 @@
     <string name="provider_status_checked_minutes">%1$d min ago</string>
     <string name="provider_status_row">● %1$s — %2$s\nModel: %3$s · Latency: %4$s · Checked: %5$s</string>
     <plurals name="provider_status_summary">
-        <item quantity="one">%1$d provider reported by Gateway.</item>
-        <item quantity="other">%1$d providers reported by Gateway.</item>
+        <item quantity="one">%1$d provider reported by the backend.</item>
+        <item quantity="other">%1$d providers reported by the backend.</item>
     </plurals>
 
     <string name="settings_orchestrator_dashboard_title">Orchestrator (Optional)</string>

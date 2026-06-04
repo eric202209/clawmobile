@@ -13,11 +13,11 @@ class ProviderStatusWorker(
 
     override suspend fun doWork(): Result {
         val app = applicationContext as ClawMobileApplication
-        val settings = GatewaySettingsResolver.resolve(applicationContext)
-        if (settings.token.isEmpty()) return Result.success()
+        val sources = GatewaySettingsResolver.resolveProviderStatusSources(applicationContext)
+        if (sources.isEmpty()) return Result.success()
 
         return GatewayProviderStatusClient(timeoutSeconds = 10)
-            .fetch(settings, settings.token)
+            .fetchAny(sources)
             .fold(
                 onSuccess = { providers ->
                     app.providerStatusDao.upsertAll(providers)
