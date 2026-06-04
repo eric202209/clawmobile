@@ -60,14 +60,18 @@ class GatewayProviderStatusClient(
                                 try {
                                     return@runCatching parse(body, nowMillis())
                                 } catch (e: GatewayProviderStatusException.Malformed) {
-                                    if (index == urls.lastIndex) throw e
-                                    lastFailure = e
+                                    val endpointFailure = GatewayProviderStatusException.Malformed(
+                                        "${e.message} at $url",
+                                        e
+                                    )
+                                    if (index == urls.lastIndex) throw endpointFailure
+                                    lastFailure = endpointFailure
                                 }
                             }
                         }
                     }
                 }
-                throw lastFailure ?: lastHttpFailure
+                throw lastHttpFailure ?: lastFailure
                     ?: IOException("Gateway provider status endpoint was not found")
             }
         }
