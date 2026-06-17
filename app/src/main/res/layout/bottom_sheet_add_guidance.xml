@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/md3_surface">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/space_xl">
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/addGuidanceTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/space_lg"
+            android:text="Add Guidance"
+            android:textColor="@color/text_primary"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <!-- Message input -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/messageInputLayout"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Guidance message"
+            android:layout_marginBottom="@dimen/space_xs"
+            app:counterEnabled="true"
+            app:counterMaxLength="500">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/messageInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="top"
+                android:inputType="textMultiLine"
+                android:maxLength="500"
+                android:minLines="3" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Priority selector -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_md"
+            android:layout_marginBottom="@dimen/space_xs"
+            android:text="Priority"
+            android:textColor="@color/text_secondary"
+            android:textSize="12sp" />
+
+        <com.google.android.material.button.MaterialButtonToggleGroup
+            android:id="@+id/priorityToggleGroup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:selectionRequired="true"
+            app:singleSelection="true">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/priorityLow"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="@dimen/touch_target_min"
+                android:layout_weight="1"
+                android:text="Low" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/priorityNormal"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="@dimen/touch_target_min"
+                android:layout_weight="1"
+                android:checked="true"
+                android:text="Normal" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/priorityHigh"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="@dimen/touch_target_min"
+                android:layout_weight="1"
+                android:text="High" />
+        </com.google.android.material.button.MaterialButtonToggleGroup>
+
+        <!-- Advanced targeting toggle -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_lg"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Advanced targeting"
+                android:textColor="@color/text_secondary"
+                android:textSize="13sp" />
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/advancedTargetingSwitch"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <!-- Advanced targeting section -->
+        <LinearLayout
+            android:id="@+id/advancedTargetingSection"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <!-- Backend targets -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_md"
+                android:text="Backend targets"
+                android:textColor="@color/text_secondary"
+                android:textSize="12sp" />
+
+            <com.google.android.material.checkbox.MaterialCheckBox
+                android:id="@+id/backendAll"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:text="All backends"
+                android:textColor="@color/text_primary"
+                android:textSize="14sp" />
+
+            <com.google.android.material.checkbox.MaterialCheckBox
+                android:id="@+id/backendDirectOllama"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="direct_ollama"
+                android:textColor="@color/text_primary"
+                android:textSize="14sp" />
+
+            <com.google.android.material.checkbox.MaterialCheckBox
+                android:id="@+id/backendLocalOpenclaw"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="local_openclaw"
+                android:textColor="@color/text_primary"
+                android:textSize="14sp" />
+
+            <!-- Purpose targets -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_md"
+                android:text="Purpose targets"
+                android:textColor="@color/text_secondary"
+                android:textSize="12sp" />
+
+            <com.google.android.material.checkbox.MaterialCheckBox
+                android:id="@+id/purposeAll"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:text="All purposes"
+                android:textColor="@color/text_primary"
+                android:textSize="14sp" />
+
+            <com.google.android.material.checkbox.MaterialCheckBox
+                android:id="@+id/purposePlanning"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="planning"
+                android:textColor="@color/text_primary"
+                android:textSize="14sp" />
+
+            <com.google.android.material.checkbox.MaterialCheckBox
+                android:id="@+id/purposeExecution"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="execution"
+                android:textColor="@color/text_primary"
+                android:textSize="14sp" />
+
+            <com.google.android.material.checkbox.MaterialCheckBox
+                android:id="@+id/purposeRepair"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="repair"
+                android:textColor="@color/text_primary"
+                android:textSize="14sp" />
+
+            <!-- validation reserved: hidden by default, shown by Activity in advanced mode -->
+            <com.google.android.material.checkbox.MaterialCheckBox
+                android:id="@+id/purposeValidation"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="validation (reserved / future runtime support)"
+                android:textColor="@color/text_secondary"
+                android:textSize="14sp"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <!-- Action buttons -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_xl"
+            android:gravity="end"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/cancelButton"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/touch_target_min"
+                android:layout_marginEnd="@dimen/space_md"
+                android:text="Cancel" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/saveGuidanceButton"
+                style="@style/Widget.Material3.Button"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/touch_target_min"
+                android:text="Add Guidance" />
+        </LinearLayout>
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

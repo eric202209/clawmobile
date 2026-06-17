@@ -231,6 +231,57 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
+        <!-- Human Guidance entry point -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/space_lg"
+            android:layout_marginTop="@dimen/space_md"
+            android:layout_marginEnd="@dimen/space_lg"
+            app:cardBackgroundColor="@color/surface"
+            app:cardCornerRadius="@dimen/radius_md"
+            app:cardElevation="0dp">
+
+            <LinearLayout
+                android:id="@+id/guidanceEntryCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:padding="@dimen/space_lg">
+
+                <TextView
+                    style="@style/TextAppearance.OpenClaw.SectionTitle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Human Guidance" />
+
+                <TextView
+                    android:id="@+id/guidanceStatusBadge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="@dimen/space_sm"
+                    android:background="@drawable/bg_status_chip"
+                    android:paddingHorizontal="@dimen/space_sm"
+                    android:paddingVertical="2dp"
+                    android:text="—"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp" />
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:contentDescription="Open guidance"
+                    android:rotation="-90"
+                    android:src="@drawable/ic_chevron_down"
+                    app:tint="@color/text_secondary" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
         <!-- Files accordion (collapsed by default) -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"

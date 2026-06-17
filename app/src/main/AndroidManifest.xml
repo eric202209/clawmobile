@@ -41,6 +41,7 @@
         <activity android:name=".ui.tasks.SessionDetailActivity" android:exported="false" />
         <activity android:name=".ui.tasks.SessionMonitorActivity" android:exported="false" />
         <activity android:name=".ui.tasks.TaskDetailActivity" android:exported="false" />
+        <activity android:name=".ui.tasks.HumanGuidanceActivity" android:exported="false" />
         <activity android:name=".ui.tools.GitHubActivity" android:exported="false" />
         <activity android:name=".ui.tools.ToolsActivity" android:exported="false" />
         <activity android:name=".ui.activities.NotesActivity" android:exported="false" />

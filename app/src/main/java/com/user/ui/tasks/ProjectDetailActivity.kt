@@ -55,6 +55,16 @@ class ProjectDetailActivity : AppCompatActivity() {
         supportActionBar?.title = if (projectId.isBlank()) getString(R.string.nav_projects) else projectName
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
+        binding.guidanceEntryCard.setOnClickListener {
+            val id = projectId.toIntOrNull() ?: return@setOnClickListener
+            startActivity(
+                android.content.Intent(this, HumanGuidanceActivity::class.java).apply {
+                    putExtra("project_id", id)
+                    putExtra("project_name", projectName)
+                }
+            )
+        }
+
         binding.filesAccordionHeader.setOnClickListener {
             toggleAccordion(binding.filesContent, binding.filesChevron)
         }

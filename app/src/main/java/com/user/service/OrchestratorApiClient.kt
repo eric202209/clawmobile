@@ -30,6 +30,12 @@ import com.user.data.Project
 import com.user.data.ProjectTreeResponse
 import com.user.data.ProjectStatusResponse
 import com.user.data.ProjectTasksResponse
+import com.user.data.HumanGuidanceConflict
+import com.user.data.HumanGuidanceConflictListResponse
+import com.user.data.HumanGuidanceEntry
+import com.user.data.HumanGuidanceListResponse
+import com.user.data.HumanGuidanceReadiness
+import com.user.data.HumanGuidanceRendered
 import com.user.data.KnowledgeUsageResponse
 import com.user.data.TaskChangeSetResponse
 import com.user.data.previewSecret
@@ -1126,6 +1132,168 @@ class OrchestratorApiClient(
             }
         } catch (e: Exception) {
             buildFailure("Failed to reject change set for task $taskId.", e)
+        }
+    }
+
+    // ── Human Guidance ────────────────────────────────────────────
+
+    suspend fun getGuidanceReadiness(projectId: Int): Result<HumanGuidanceReadiness> = withContext(Dispatchers.IO) {
+        try {
+            val url = buildApiUrl("projects/$projectId/guidance/readiness")
+            val request = Request.Builder().url(url).headers(okhttp3.Headers.headersOf(*buildHeadersArray())).get().build()
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) return@withContext buildFailure("Guidance readiness API failed for $projectId (${response.code}).")
+                val json = response.body?.string() ?: throw Exception("Empty response")
+                Result.success(gson.fromJson(json, HumanGuidanceReadiness::class.java))
+            }
+        } catch (e: Exception) {
+            buildFailure("Failed to load guidance readiness for $projectId.", e)
+        }
+    }
+
+    suspend fun listGuidance(projectId: Int, status: String? = "active", limit: Int = 50): Result<HumanGuidanceListResponse> = withContext(Dispatchers.IO) {
+        try {
+            val params = buildString {
+                val p = mutableListOf("limit=$limit")
+                if (!status.isNullOrBlank() && status != "all") p.add("status=$status")
+                append("?${p.joinToString("&")}")
+            }
+            val url = buildApiUrl("projects/$projectId/guidance$params")
+            val request = Request.Builder().url(url).headers(okhttp3.Headers.headersOf(*buildHeadersArray())).get().build()
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) return@withContext buildFailure("List guidance API failed for $projectId (${response.code}).")
+                val json = response.body?.string() ?: throw Exception("Empty response")
+                Result.success(gson.fromJson(json, HumanGuidanceListResponse::class.java))
+            }
+        } catch (e: Exception) {
+            buildFailure("Failed to list guidance for $projectId.", e)
+        }
+    }
+
+    suspend fun createGuidance(projectId: Int, payload: Map<String, Any>): Result<HumanGuidanceEntry> = withContext(Dispatchers.IO) {
+        try {
+            val url = buildApiUrl("projects/$projectId/guidance")
+            val jsonBody = gson.toJson(payload)
+            val request = Request.Builder().url(url).headers(okhttp3.Headers.headersOf(*buildHeadersArray()))
+                .post(jsonBody.toRequestBody("application/json".toMediaTypeOrNull())).build()
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) {
+                    val errBody = response.body?.string().orEmpty()
+                    return@withContext buildFailure(readApiError(errBody) ?: "Create guidance failed (${response.code}).")
+                }
+                val json = response.body?.string() ?: throw Exception("Empty response")
+                Result.success(gson.fromJson(json, HumanGuidanceEntry::class.java))
+            }
+        } catch (e: Exception) {
+            buildFailure("Failed to create guidance.", e)
+        }
+    }
+
+    suspend fun patchGuidance(guidanceId: Int, payload: Map<String, Any>): Result<HumanGuidanceEntry> = withContext(Dispatchers.IO) {
+        try {
+            val url = buildApiUrl("guidance/$guidanceId")
+            val jsonBody = gson.toJson(payload)
+            val request = Request.Builder().url(url).headers(okhttp3.Headers.headersOf(*buildHeadersArray()))
+                .patch(jsonBody.toRequestBody("application/json".toMediaTypeOrNull())).build()
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) return@withContext buildFailure("Patch guidance $guidanceId failed (${response.code}).")
+                val json = response.body?.string() ?: throw Exception("Empty response")
+                Result.success(gson.fromJson(json, HumanGuidanceEntry::class.java))
+            }
+        } catch (e: Exception) {
+            buildFailure("Failed to patch guidance $guidanceId.", e)
+        }
+    }
+
+    suspend fun archiveGuidance(guidanceId: Int): Result<Unit> = withContext(Dispatchers.IO) {
+        try {
+            val url = buildApiUrl("guidance/$guidanceId")
+            val request = Request.Builder().url(url).headers(okhttp3.Headers.headersOf(*buildHeadersArray())).delete().build()
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) return@withContext buildFailure("Archive guidance $guidanceId failed (${response.code}).")
+                Result.success(Unit)
+            }
+        } catch (e: Exception) {
+            buildFailure("Failed to archive guidance $guidanceId.", e)
+        }
+    }
+
+    suspend fun getRenderedGuidance(projectId: Int, backend: String? = null, modelFamily: String? = null, purpose: String? = null): Result<HumanGuidanceRendered> = withContext(Dispatchers.IO) {
+        try {
+            val params = mutableListOf<String>()
+            if (!backend.isNullOrBlank()) params.add("backend=$backend")
+            if (!modelFamily.isNullOrBlank()) params.add("model_family=$modelFamily")
+            if (!purpose.isNullOrBlank()) params.add("purpose=$purpose")
+            val query = if (params.isEmpty()) "" else "?${params.joinToString("&")}"
+            val url = buildApiUrl("projects/$projectId/guidance/rendered$query")
+            val request = Request.Builder().url(url).headers(okhttp3.Headers.headersOf(*buildHeadersArray())).get().build()
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) return@withContext buildFailure("Get rendered guidance failed for $projectId (${response.code}).")
+                val json = response.body?.string() ?: throw Exception("Empty response")
+                Result.success(gson.fromJson(json, HumanGuidanceRendered::class.java))
+            }
+        } catch (e: Exception) {
+            buildFailure("Failed to get rendered guidance for $projectId.", e)
+        }
+    }
+
+    suspend fun listGuidanceConflicts(projectId: Int, status: String? = "open"): Result<HumanGuidanceConflictListResponse> = withContext(Dispatchers.IO) {
+        try {
+            val query = if (!status.isNullOrBlank()) "?status=$status" else ""
+            val url = buildApiUrl("projects/$projectId/guidance/conflicts$query")
+            val request = Request.Builder().url(url).headers(okhttp3.Headers.headersOf(*buildHeadersArray())).get().build()
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) return@withContext buildFailure("List guidance conflicts failed for $projectId (${response.code}).")
+                val json = response.body?.string() ?: throw Exception("Empty response")
+                Result.success(gson.fromJson(json, HumanGuidanceConflictListResponse::class.java))
+            }
+        } catch (e: Exception) {
+            buildFailure("Failed to list guidance conflicts for $projectId.", e)
+        }
+    }
+
+    suspend fun patchGuidanceConflict(projectId: Int, conflictId: Int, payload: Map<String, Any>): Result<HumanGuidanceConflict> = withContext(Dispatchers.IO) {
+        try {
+            val url = buildApiUrl("projects/$projectId/guidance/conflicts/$conflictId")
+            val jsonBody = gson.toJson(payload)
+            val request = Request.Builder().url(url).headers(okhttp3.Headers.headersOf(*buildHeadersArray()))
+                .patch(jsonBody.toRequestBody("application/json".toMediaTypeOrNull())).build()
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) return@withContext buildFailure("Patch guidance conflict $conflictId failed (${response.code}).")
+                val json = response.body?.string() ?: throw Exception("Empty response")
+                Result.success(gson.fromJson(json, HumanGuidanceConflict::class.java))
+            }
+        } catch (e: Exception) {
+            buildFailure("Failed to patch guidance conflict $conflictId.", e)
+        }
+    }
+
+    suspend fun patchGuidanceActivation(projectId: Int, payload: Map<String, Any>): Result<Unit> = withContext(Dispatchers.IO) {
+        try {
+            val url = buildApiUrl("projects/$projectId/guidance/activation")
+            val jsonBody = gson.toJson(payload)
+            val request = Request.Builder().url(url).headers(okhttp3.Headers.headersOf(*buildHeadersArray()))
+                .patch(jsonBody.toRequestBody("application/json".toMediaTypeOrNull())).build()
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) return@withContext buildFailure("Patch guidance activation failed for $projectId (${response.code}).")
+                Result.success(Unit)
+            }
+        } catch (e: Exception) {
+            buildFailure("Failed to patch guidance activation for $projectId.", e)
+        }
+    }
+
+    suspend fun disableGuidanceActivation(projectId: Int): Result<Unit> = withContext(Dispatchers.IO) {
+        try {
+            val url = buildApiUrl("projects/$projectId/guidance/activation/disable")
+            val request = Request.Builder().url(url).headers(okhttp3.Headers.headersOf(*buildHeadersArray()))
+                .post(okhttp3.RequestBody.create(null, ByteArray(0))).build()
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) return@withContext buildFailure("Disable guidance activation failed for $projectId (${response.code}).")
+                Result.success(Unit)
+            }
+        } catch (e: Exception) {
+            buildFailure("Failed to disable guidance activation for $projectId.", e)
         }
     }
 

@@ -1,0 +1,423 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background"
+    android:fillViewport="true"
+    android:fitsSystemWindows="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@color/toolbar_color"
+            app:navigationIcon="@drawable/ic_back"
+            app:titleTextColor="@color/text_primary" />
+
+        <!-- Readiness summary card -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/readinessCard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/space_lg"
+            android:layout_marginTop="@dimen/space_lg"
+            android:layout_marginEnd="@dimen/space_lg"
+            app:cardBackgroundColor="@color/surface"
+            app:cardCornerRadius="@dimen/radius_md"
+            app:cardElevation="0dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/space_lg">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        style="@style/TextAppearance.OpenClaw.SectionTitle"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Human Guidance" />
+
+                    <TextView
+                        android:id="@+id/statusBadge"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_status_chip"
+                        android:paddingHorizontal="@dimen/space_md"
+                        android:paddingVertical="@dimen/space_xs"
+                        android:text="Inactive"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="12sp" />
+                </LinearLayout>
+
+                <!-- Stats row -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_md"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/activeCountText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="0"
+                            android:textColor="@color/text_primary"
+                            android:textSize="22sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Active entries"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/conflictCountText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="0"
+                            android:textColor="@color/status_failed"
+                            android:textSize="22sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Conflicts"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/planningCountText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="0"
+                            android:textColor="@color/text_primary"
+                            android:textSize="22sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Planning"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- Warning text -->
+                <TextView
+                    android:id="@+id/warningText"
+                    style="@style/TextAppearance.OpenClaw.SectionBody"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_sm"
+                    android:textColor="@color/status_pending"
+                    android:visibility="gone" />
+
+                <!-- Enable button -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/enableGuidanceButton"
+                    style="@style/Widget.Material3.Button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="@dimen/touch_target_min"
+                    android:layout_marginTop="@dimen/space_md"
+                    android:text="Enable Human Guidance"
+                    android:visibility="gone" />
+
+                <!-- Advanced mode + disable row -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_md"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Advanced mode"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="13sp" />
+
+                    <androidx.appcompat.widget.SwitchCompat
+                        android:id="@+id/advancedModeSwitch"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Active guidance card -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/space_lg"
+            android:layout_marginTop="@dimen/space_md"
+            android:layout_marginEnd="@dimen/space_lg"
+            app:cardBackgroundColor="@color/surface"
+            app:cardCornerRadius="@dimen/radius_md"
+            app:cardElevation="0dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/space_lg">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        style="@style/TextAppearance.OpenClaw.SectionTitle"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Guidance" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/addGuidanceButton"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="@dimen/touch_target_min"
+                        android:text="+ Add"
+                        android:textSize="13sp" />
+                </LinearLayout>
+
+                <!-- Filter chips -->
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/filterChipGroup"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_sm"
+                    app:singleSelection="true"
+                    app:selectionRequired="true">
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipActive"
+                        style="@style/Widget.Material3.Chip.Filter"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="true"
+                        android:text="Active" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipDisabled"
+                        style="@style/Widget.Material3.Chip.Filter"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Disabled" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipAll"
+                        style="@style/Widget.Material3.Chip.Filter"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="All" />
+                </com.google.android.material.chip.ChipGroup>
+
+                <TextView
+                    android:id="@+id/guidanceEmptyText"
+                    style="@style/TextAppearance.OpenClaw.SectionBody"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_sm"
+                    android:text="No guidance entries yet"
+                    android:visibility="gone" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/guidanceRecyclerView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_sm"
+                    android:nestedScrollingEnabled="false" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Conflicts accordion -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/space_lg"
+            android:layout_marginTop="@dimen/space_md"
+            android:layout_marginEnd="@dimen/space_lg"
+            app:cardBackgroundColor="@color/surface"
+            app:cardCornerRadius="@dimen/radius_md"
+            app:cardElevation="0dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:id="@+id/conflictsAccordionHeader"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="?attr/selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/space_lg">
+
+                    <TextView
+                        style="@style/TextAppearance.OpenClaw.SectionTitle"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Conflicts" />
+
+                    <TextView
+                        android:id="@+id/conflictBadge"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="@dimen/space_sm"
+                        android:background="@drawable/bg_status_chip"
+                        android:paddingHorizontal="@dimen/space_sm"
+                        android:paddingVertical="2dp"
+                        android:textColor="@color/status_failed"
+                        android:textSize="12sp"
+                        android:visibility="gone" />
+
+                    <ImageView
+                        android:id="@+id/conflictsChevron"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:contentDescription="Expand conflicts"
+                        android:src="@drawable/ic_chevron_down"
+                        app:tint="@color/text_secondary" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/conflictsContent"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingStart="@dimen/space_lg"
+                    android:paddingEnd="@dimen/space_lg"
+                    android:paddingBottom="@dimen/space_lg"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:id="@+id/conflictsEmptyText"
+                        style="@style/TextAppearance.OpenClaw.SectionBody"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="No open conflicts"
+                        android:visibility="gone" />
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/conflictsRecyclerView"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:nestedScrollingEnabled="false" />
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Preview accordion (advanced mode only) -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/previewCard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/space_lg"
+            android:layout_marginTop="@dimen/space_md"
+            android:layout_marginEnd="@dimen/space_lg"
+            android:layout_marginBottom="@dimen/space_2xl"
+            android:visibility="gone"
+            app:cardBackgroundColor="@color/surface"
+            app:cardCornerRadius="@dimen/radius_md"
+            app:cardElevation="0dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/space_lg">
+
+                <TextView
+                    style="@style/TextAppearance.OpenClaw.SectionTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Rendered Preview" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/loadPreviewButton"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="@dimen/touch_target_min"
+                    android:layout_marginTop="@dimen/space_sm"
+                    android:text="Load Preview" />
+
+                <TextView
+                    android:id="@+id/previewMetaText"
+                    style="@style/TextAppearance.OpenClaw.SectionBody"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_sm"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/previewBlockText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_sm"
+                    android:background="@drawable/bg_github_result_panel"
+                    android:fontFamily="monospace"
+                    android:padding="@dimen/space_md"
+                    android:textColor="@color/text_primary"
+                    android:textIsSelectable="true"
+                    android:textSize="12sp"
+                    android:visibility="gone" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Bottom padding when preview card not shown -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/space_2xl" />
+
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>
