@@ -117,19 +117,19 @@ class HumanGuidanceActivity : AppCompatActivity() {
 
         CoroutineScope(Dispatchers.Main).launch {
             c.getGuidanceReadiness(projectId).onSuccess { readiness ->
-                val isReady = readiness.isReady
+                val isReady = readiness.ready
                 binding.statusBadge.text = if (isReady) "Active" else "Inactive"
                 binding.statusBadge.setTextColor(
                     if (isReady) getColor(R.color.status_approved) else getColor(R.color.text_secondary)
                 )
-                binding.activeCountText.text = readiness.activeGuidanceCount.toString()
+                binding.activeCountText.text = readiness.guidanceStatistics.activeGuidance.toString()
 
                 val stats = readiness.purposeStatistics
                 binding.planningCountText.text = (stats.planning + stats.execution + stats.repair).toString()
 
-                val warnings = readiness.warnings
-                if (warnings.isNotEmpty()) {
-                    binding.warningText.text = warnings.joinToString("\n")
+                val reasons = readiness.blockingReasons
+                if (reasons.isNotEmpty()) {
+                    binding.warningText.text = reasons.joinToString("\n") { it.replace('_', ' ') }
                     binding.warningText.visibility = View.VISIBLE
                 } else {
                     binding.warningText.visibility = View.GONE

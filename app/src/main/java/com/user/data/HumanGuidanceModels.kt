@@ -55,14 +55,22 @@ data class HumanGuidanceBackendStats(
     @SerializedName("filtered_ids") val filteredIds: List<Int> = emptyList(),
 )
 
+data class HumanGuidanceGuidanceStats(
+    @SerializedName("active_guidance") val activeGuidance: Int = 0,
+    @SerializedName("selected_guidance") val selectedGuidance: Int = 0,
+    @SerializedName("trimmed_guidance") val trimmedGuidance: Int = 0,
+)
+
 data class HumanGuidanceReadiness(
     @SerializedName("project_id") val projectId: Int = 0,
-    @SerializedName("active_guidance_count") val activeGuidanceCount: Int = 0,
-    @SerializedName("is_ready") val isReady: Boolean = false,
-    val activation: HumanGuidanceActivationData? = null,
+    @SerializedName("session_id") val sessionId: Int? = null,
+    val requested: HumanGuidanceActivationData? = null,
+    val effective: HumanGuidanceActivationData? = null,
+    @SerializedName("guidance_statistics") val guidanceStatistics: HumanGuidanceGuidanceStats = HumanGuidanceGuidanceStats(),
     @SerializedName("backend_statistics") val backendStatistics: HumanGuidanceBackendStats? = null,
     @SerializedName("purpose_statistics") val purposeStatistics: HumanGuidancePurposeStats = HumanGuidancePurposeStats(),
-    val warnings: List<String> = emptyList(),
+    val ready: Boolean = false,
+    @SerializedName("blocking_reasons") val blockingReasons: List<String> = emptyList(),
 )
 
 data class HumanGuidanceListResponse(
