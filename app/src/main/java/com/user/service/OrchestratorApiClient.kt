@@ -1139,7 +1139,7 @@ class OrchestratorApiClient(
 
     suspend fun getGuidanceReadiness(projectId: Int): Result<HumanGuidanceReadiness> = withContext(Dispatchers.IO) {
         try {
-            val url = buildApiUrl("projects/$projectId/guidance/readiness")
+            val url = buildMobileUrl("projects/$projectId/guidance/readiness")
             val request = Request.Builder().url(url).headers(okhttp3.Headers.headersOf(*buildHeadersArray())).get().build()
             client.newCall(request).execute().use { response ->
                 if (!response.isSuccessful) return@withContext buildFailure("Guidance readiness API failed for $projectId (${response.code}).")
@@ -1158,7 +1158,7 @@ class OrchestratorApiClient(
                 if (!status.isNullOrBlank() && status != "all") p.add("status=$status")
                 append("?${p.joinToString("&")}")
             }
-            val url = buildApiUrl("projects/$projectId/guidance$params")
+            val url = buildMobileUrl("projects/$projectId/guidance$params")
             val request = Request.Builder().url(url).headers(okhttp3.Headers.headersOf(*buildHeadersArray())).get().build()
             client.newCall(request).execute().use { response ->
                 if (!response.isSuccessful) return@withContext buildFailure("List guidance API failed for $projectId (${response.code}).")
@@ -1172,7 +1172,7 @@ class OrchestratorApiClient(
 
     suspend fun createGuidance(projectId: Int, payload: Map<String, Any>): Result<HumanGuidanceEntry> = withContext(Dispatchers.IO) {
         try {
-            val url = buildApiUrl("projects/$projectId/guidance")
+            val url = buildMobileUrl("projects/$projectId/guidance")
             val jsonBody = gson.toJson(payload)
             val request = Request.Builder().url(url).headers(okhttp3.Headers.headersOf(*buildHeadersArray()))
                 .post(jsonBody.toRequestBody("application/json".toMediaTypeOrNull())).build()
@@ -1191,7 +1191,7 @@ class OrchestratorApiClient(
 
     suspend fun patchGuidance(guidanceId: Int, payload: Map<String, Any>): Result<HumanGuidanceEntry> = withContext(Dispatchers.IO) {
         try {
-            val url = buildApiUrl("guidance/$guidanceId")
+            val url = buildMobileUrl("guidance/$guidanceId")
             val jsonBody = gson.toJson(payload)
             val request = Request.Builder().url(url).headers(okhttp3.Headers.headersOf(*buildHeadersArray()))
                 .patch(jsonBody.toRequestBody("application/json".toMediaTypeOrNull())).build()
@@ -1207,7 +1207,7 @@ class OrchestratorApiClient(
 
     suspend fun archiveGuidance(guidanceId: Int): Result<Unit> = withContext(Dispatchers.IO) {
         try {
-            val url = buildApiUrl("guidance/$guidanceId")
+            val url = buildMobileUrl("guidance/$guidanceId")
             val request = Request.Builder().url(url).headers(okhttp3.Headers.headersOf(*buildHeadersArray())).delete().build()
             client.newCall(request).execute().use { response ->
                 if (!response.isSuccessful) return@withContext buildFailure("Archive guidance $guidanceId failed (${response.code}).")
@@ -1225,7 +1225,7 @@ class OrchestratorApiClient(
             if (!modelFamily.isNullOrBlank()) params.add("model_family=$modelFamily")
             if (!purpose.isNullOrBlank()) params.add("purpose=$purpose")
             val query = if (params.isEmpty()) "" else "?${params.joinToString("&")}"
-            val url = buildApiUrl("projects/$projectId/guidance/rendered$query")
+            val url = buildMobileUrl("projects/$projectId/guidance/rendered$query")
             val request = Request.Builder().url(url).headers(okhttp3.Headers.headersOf(*buildHeadersArray())).get().build()
             client.newCall(request).execute().use { response ->
                 if (!response.isSuccessful) return@withContext buildFailure("Get rendered guidance failed for $projectId (${response.code}).")
@@ -1240,7 +1240,7 @@ class OrchestratorApiClient(
     suspend fun listGuidanceConflicts(projectId: Int, status: String? = "open"): Result<HumanGuidanceConflictListResponse> = withContext(Dispatchers.IO) {
         try {
             val query = if (!status.isNullOrBlank()) "?status=$status" else ""
-            val url = buildApiUrl("projects/$projectId/guidance/conflicts$query")
+            val url = buildMobileUrl("projects/$projectId/guidance/conflicts$query")
             val request = Request.Builder().url(url).headers(okhttp3.Headers.headersOf(*buildHeadersArray())).get().build()
             client.newCall(request).execute().use { response ->
                 if (!response.isSuccessful) return@withContext buildFailure("List guidance conflicts failed for $projectId (${response.code}).")
@@ -1254,7 +1254,7 @@ class OrchestratorApiClient(
 
     suspend fun patchGuidanceConflict(projectId: Int, conflictId: Int, payload: Map<String, Any>): Result<HumanGuidanceConflict> = withContext(Dispatchers.IO) {
         try {
-            val url = buildApiUrl("projects/$projectId/guidance/conflicts/$conflictId")
+            val url = buildMobileUrl("projects/$projectId/guidance/conflicts/$conflictId")
             val jsonBody = gson.toJson(payload)
             val request = Request.Builder().url(url).headers(okhttp3.Headers.headersOf(*buildHeadersArray()))
                 .patch(jsonBody.toRequestBody("application/json".toMediaTypeOrNull())).build()
@@ -1270,7 +1270,7 @@ class OrchestratorApiClient(
 
     suspend fun patchGuidanceActivation(projectId: Int, payload: Map<String, Any>): Result<Unit> = withContext(Dispatchers.IO) {
         try {
-            val url = buildApiUrl("projects/$projectId/guidance/activation")
+            val url = buildMobileUrl("projects/$projectId/guidance/activation")
             val jsonBody = gson.toJson(payload)
             val request = Request.Builder().url(url).headers(okhttp3.Headers.headersOf(*buildHeadersArray()))
                 .patch(jsonBody.toRequestBody("application/json".toMediaTypeOrNull())).build()
@@ -1285,7 +1285,7 @@ class OrchestratorApiClient(
 
     suspend fun disableGuidanceActivation(projectId: Int): Result<Unit> = withContext(Dispatchers.IO) {
         try {
-            val url = buildApiUrl("projects/$projectId/guidance/activation/disable")
+            val url = buildMobileUrl("projects/$projectId/guidance/activation/disable")
             val request = Request.Builder().url(url).headers(okhttp3.Headers.headersOf(*buildHeadersArray()))
                 .post(okhttp3.RequestBody.create(null, ByteArray(0))).build()
             client.newCall(request).execute().use { response ->
