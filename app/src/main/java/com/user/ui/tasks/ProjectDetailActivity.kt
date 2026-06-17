@@ -77,6 +77,27 @@ class ProjectDetailActivity : AppCompatActivity() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        if (projectId.isNotBlank()) {
+            loadGuidanceCard()
+        }
+    }
+
+    private fun loadGuidanceCard() {
+        val client = orchestratorClient ?: return
+        val id = projectId.toIntOrNull() ?: return
+        CoroutineScope(Dispatchers.Main).launch {
+            client.getGuidanceReadiness(id).onSuccess { readiness ->
+                binding.guidanceStatusBadge.text = if (readiness.ready) "Active" else "Inactive"
+                binding.guidanceStatusBadge.setTextColor(
+                    if (readiness.ready) getColor(R.color.status_approved)
+                    else getColor(R.color.text_secondary)
+                )
+            }
+        }
+    }
+
     private fun setupTaskList() {
         adapter = ProjectTaskAdapter(
             onTaskClick = { task ->

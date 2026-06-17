@@ -40,7 +40,8 @@
                 android:gravity="top"
                 android:inputType="textMultiLine"
                 android:maxLength="500"
-                android:minLines="3" />
+                android:minLines="3"
+                android:textColor="@color/text_primary" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Priority selector -->
@@ -66,7 +67,8 @@
                 android:layout_width="0dp"
                 android:layout_height="@dimen/touch_target_min"
                 android:layout_weight="1"
-                android:text="Low" />
+                android:text="Low"
+                android:textColor="@color/text_primary" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/priorityNormal"
@@ -75,7 +77,8 @@
                 android:layout_height="@dimen/touch_target_min"
                 android:layout_weight="1"
                 android:checked="true"
-                android:text="Normal" />
+                android:text="Normal"
+                android:textColor="@color/text_primary" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/priorityHigh"
@@ -83,7 +86,8 @@
                 android:layout_width="0dp"
                 android:layout_height="@dimen/touch_target_min"
                 android:layout_weight="1"
-                android:text="High" />
+                android:text="High"
+                android:textColor="@color/text_primary" />
         </com.google.android.material.button.MaterialButtonToggleGroup>
 
         <!-- Advanced targeting toggle -->

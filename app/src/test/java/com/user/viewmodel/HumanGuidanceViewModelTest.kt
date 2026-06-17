@@ -2,6 +2,7 @@ package com.user.viewmodel
 
 import com.user.data.HumanGuidanceConflict
 import com.user.data.HumanGuidanceEntry
+import com.user.data.HumanGuidanceGuidanceStats
 import com.user.data.HumanGuidanceReadiness
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -95,14 +96,18 @@ class HumanGuidanceViewModelTest {
 
     @Test
     fun readyStateHasCorrectGuidanceCount() {
-        val readiness = HumanGuidanceReadiness(projectId = 1, activeGuidanceCount = 5, isReady = true)
+        val readiness = HumanGuidanceReadiness(
+            projectId = 1,
+            guidanceStatistics = HumanGuidanceGuidanceStats(activeGuidance = 5),
+            ready = true,
+        )
         val state = HumanGuidanceUiState.Ready(
             readiness = readiness,
             guidance = emptyList(),
             conflicts = emptyList(),
         )
-        assertEquals(5, state.readiness.activeGuidanceCount)
-        assertTrue(state.readiness.isReady)
+        assertEquals(5, state.readiness.guidanceStatistics.activeGuidance)
+        assertTrue(state.readiness.ready)
     }
 
     @Test
