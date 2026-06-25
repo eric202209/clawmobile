@@ -13,12 +13,14 @@ import com.user.data.ExecutionFailureSummaryResponse
 import com.user.data.InterventionRequest
 import com.user.data.MobileCheckpointListResponse
 import com.user.data.MobileSessionSummaryResponse
+import com.user.data.OrchestrationState
 import com.user.data.RecentActivity
 import com.user.databinding.ActivitySessionDetailBinding
 import com.user.service.LogEntry
 import com.user.service.OrchestratorApiClient
 import com.user.service.WebSocketManager
 import com.user.ui.FailureSummary
+import com.user.ui.OrchestrationStateRenderer
 import com.user.ui.OutputHighlighter
 import com.user.ui.TimeFormatUtils
 import kotlinx.coroutines.flow.collectLatest
@@ -238,6 +240,8 @@ class SessionDetailActivity : AppCompatActivity() {
 
         latestLogs = summary.recentLogs
         renderRecentLogs()
+
+        bindOrchestrationState(summary.orchestrationState)
 
         val failureSummary = if (
             summary.status.equals("failed", true) ||
@@ -496,6 +500,40 @@ class SessionDetailActivity : AppCompatActivity() {
             log.level.equals("ERROR", true) || message.contains("failed") || message.contains("error") || message.contains("timeout") ->
                 "Errors"
             else -> "Recent Activity"
+        }
+    }
+
+    private fun bindOrchestrationState(state: OrchestrationState?) {
+        if (state == null) {
+            binding.orchestrationStateCard.visibility = View.GONE
+            return
+        }
+        binding.orchestrationStateCard.visibility = View.VISIBLE
+        binding.orchestrationPhaseView.text = OrchestrationStateRenderer.phaseLabel(state.currentPhase)
+        binding.orchestrationTerminalView.text = OrchestrationStateRenderer.stateLabel(state.isTerminal)
+
+        val coordinator = state.coordinator
+        if (coordinator != null) {
+            binding.orchestrationCoordinatorView.text = "Coordinator: $coordinator"
+            binding.orchestrationCoordinatorView.visibility = View.VISIBLE
+        } else {
+            binding.orchestrationCoordinatorView.visibility = View.GONE
+        }
+
+        val reasonLabel = OrchestrationStateRenderer.terminalReasonLabel(state.terminalReason)
+        if (reasonLabel != null) {
+            binding.orchestrationTerminalReasonView.text = "Why it stopped: $reasonLabel"
+            binding.orchestrationTerminalReasonView.visibility = View.VISIBLE
+        } else {
+            binding.orchestrationTerminalReasonView.visibility = View.GONE
+        }
+
+        if (state.allowedActions.isNotEmpty()) {
+            binding.orchestrationActionsView.text =
+                state.allowedActions.joinToString(" · ") { OrchestrationStateRenderer.actionLabel(it) }
+            binding.orchestrationActionsView.visibility = View.VISIBLE
+        } else {
+            binding.orchestrationActionsView.visibility = View.GONE
         }
     }
 

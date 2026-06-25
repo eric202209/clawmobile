@@ -320,6 +320,18 @@ data class MobileActiveAlert(
     val at: String? = null
 )
 
+data class OrchestrationState(
+    @SerializedName("current_phase")
+    val currentPhase: String? = null,
+    @SerializedName("terminal_reason")
+    val terminalReason: String? = null,
+    val coordinator: String? = null,
+    @SerializedName("is_terminal")
+    val isTerminal: Boolean = false,
+    @SerializedName("allowed_actions")
+    val allowedActions: List<String> = emptyList()
+)
+
 data class MobileSessionSummaryResponse(
     @SerializedName("session_id")
     val sessionId: Int = 0,
@@ -336,7 +348,9 @@ data class MobileSessionSummaryResponse(
     @SerializedName("task_progress")
     val taskProgress: TaskStatsResponse? = null,
     @SerializedName("recent_logs")
-    val recentLogs: List<RecentActivity> = emptyList()
+    val recentLogs: List<RecentActivity> = emptyList(),
+    @SerializedName("orchestration_state")
+    val orchestrationState: OrchestrationState? = null
 )
 
 // ── Recovery Context ──────────────────────────────────────────
