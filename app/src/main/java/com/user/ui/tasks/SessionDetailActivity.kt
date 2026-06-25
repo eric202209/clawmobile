@@ -256,9 +256,7 @@ class SessionDetailActivity : AppCompatActivity() {
         binding.sessionFailureCard.visibility =
             if (failureSummary.isNullOrBlank()) View.GONE else View.VISIBLE
 
-        val isRunning = summary.status.equals("running", true)
-        binding.pauseButton.visibility = if (isRunning) View.VISIBLE else View.GONE
-        binding.stopButton.visibility = if (isRunning) View.VISIBLE else View.GONE
+        // Button visibility is resolved in renderRecoveryCard() after allowed_actions are known.
     }
 
     private fun bindCheckpoints(checkpoints: MobileCheckpointListResponse) {
@@ -338,9 +336,18 @@ class SessionDetailActivity : AppCompatActivity() {
             else -> binding.recoveryCard.visibility = View.GONE
         }
 
-        binding.pauseButton.visibility = if (status == "running") View.VISIBLE else View.GONE
-        binding.resumeButton.visibility = if (resumable) View.VISIBLE else View.GONE
-        binding.stopButton.visibility = if (status == "running" || status == "paused") View.VISIBLE else View.GONE
+        // When orchestration_state is present, allowed_actions is authoritative for button visibility.
+        // Fall back to status-based logic when orchestration_state is absent.
+        val allowedActions = summary.orchestrationState?.allowedActions
+        if (allowedActions != null) {
+            binding.pauseButton.visibility = if (allowedActions.contains("pause_session")) View.VISIBLE else View.GONE
+            binding.resumeButton.visibility = if (allowedActions.contains("resume_session")) View.VISIBLE else View.GONE
+            binding.stopButton.visibility = if (allowedActions.contains("stop_session")) View.VISIBLE else View.GONE
+        } else {
+            binding.pauseButton.visibility = if (status == "running") View.VISIBLE else View.GONE
+            binding.resumeButton.visibility = if (resumable) View.VISIBLE else View.GONE
+            binding.stopButton.visibility = if (status == "running" || status == "paused") View.VISIBLE else View.GONE
+        }
         binding.resumeButton.text = getString(R.string.resume_button_label)
     }
 

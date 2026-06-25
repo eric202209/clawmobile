@@ -202,4 +202,104 @@ class OrchestrationStateTest {
         assertFalse(s.isTerminal)
         assertEquals("Future Unknown Phase", OrchestrationStateRenderer.phaseLabel(s.currentPhase))
     }
+
+    // ── Button gating via allowed_actions (Phase 14E) ─────────────────────────
+
+    @Test
+    fun allowedActions_gatePauseButton_presentWhenIncluded() {
+        val s = state(allowedActions = listOf("pause_session", "stop_session"))
+        assertTrue("pause_session" in s.allowedActions)
+    }
+
+    @Test
+    fun allowedActions_gatePauseButton_absentWhenExcluded() {
+        val s = state(allowedActions = listOf("stop_session"))
+        assertFalse("pause_session" in s.allowedActions)
+    }
+
+    @Test
+    fun allowedActions_gateResumeButton_presentWhenIncluded() {
+        val s = state(allowedActions = listOf("resume_session", "stop_session"))
+        assertTrue("resume_session" in s.allowedActions)
+    }
+
+    @Test
+    fun allowedActions_gateResumeButton_absentWhenExcluded() {
+        val s = state(allowedActions = listOf("stop_session", "view_logs"))
+        assertFalse("resume_session" in s.allowedActions)
+    }
+
+    @Test
+    fun allowedActions_gateStopButton_presentWhenIncluded() {
+        val s = state(allowedActions = listOf("pause_session", "stop_session"))
+        assertTrue("stop_session" in s.allowedActions)
+    }
+
+    @Test
+    fun allowedActions_gateStopButton_absentWhenExcluded() {
+        val s = state(allowedActions = listOf("pause_session", "view_logs"))
+        assertFalse("stop_session" in s.allowedActions)
+    }
+
+    @Test
+    fun allowedActions_gateSubmitGuidance_presentForHitl() {
+        val s = state(
+            currentPhase = "awaiting_input",
+            allowedActions = listOf("submit_guidance", "stop_session")
+        )
+        assertTrue("submit_guidance" in s.allowedActions)
+    }
+
+    @Test
+    fun allowedActions_gateSubmitGuidance_absentForOperatorPause() {
+        val s = state(
+            currentPhase = "awaiting_input",
+            allowedActions = listOf("resume_session", "stop_session")
+        )
+        assertFalse("submit_guidance" in s.allowedActions)
+    }
+
+    @Test
+    fun nullOrchestrationState_allowedActionsIsNull_fallsBackToStatusBased() {
+        // When orchestrationState is null, allowed_actions check returns null → status-based fallback
+        val summary = MobileSessionSummaryResponse(sessionId = 1, name = "test", status = "running")
+        assertNull(summary.orchestrationState?.allowedActions)
+    }
+
+    @Test
+    fun runningSession_typicalAllowedActions() {
+        val s = state(
+            currentPhase = "step_executing",
+            allowedActions = listOf("pause_session", "stop_session", "view_logs", "view_timeline")
+        )
+        assertTrue("pause_session" in s.allowedActions)
+        assertTrue("stop_session" in s.allowedActions)
+        assertFalse("resume_session" in s.allowedActions)
+        assertFalse("submit_guidance" in s.allowedActions)
+    }
+
+    @Test
+    fun pausedSession_typicalAllowedActions() {
+        val s = state(
+            currentPhase = "awaiting_input",
+            allowedActions = listOf("resume_session", "stop_session", "view_logs", "view_timeline")
+        )
+        assertTrue("resume_session" in s.allowedActions)
+        assertTrue("stop_session" in s.allowedActions)
+        assertFalse("pause_session" in s.allowedActions)
+        assertFalse("submit_guidance" in s.allowedActions)
+    }
+
+    @Test
+    fun terminalSession_noMutatingActions() {
+        val s = state(
+            currentPhase = "done",
+            isTerminal = true,
+            allowedActions = listOf("view_logs", "view_timeline", "view_recovery_context")
+        )
+        assertFalse("pause_session" in s.allowedActions)
+        assertFalse("resume_session" in s.allowedActions)
+        assertFalse("stop_session" in s.allowedActions)
+        assertFalse("submit_guidance" in s.allowedActions)
+    }
 }
