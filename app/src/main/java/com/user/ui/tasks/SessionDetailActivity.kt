@@ -16,8 +16,10 @@ import com.user.data.MobileSessionSummaryResponse
 import com.user.data.OrchestrationState
 import com.user.data.RecentActivity
 import com.user.databinding.ActivitySessionDetailBinding
+import com.user.data.SseStreamHelper
 import com.user.service.LogEntry
 import com.user.service.OrchestratorApiClient
+import com.user.service.SseClient
 import com.user.service.WebSocketManager
 import com.user.ui.FailureSummary
 import com.user.ui.OrchestrationStateRenderer
@@ -38,6 +40,7 @@ class SessionDetailActivity : AppCompatActivity() {
     private lateinit var binding: ActivitySessionDetailBinding
     private var orchestratorClient: OrchestratorApiClient? = null
     private var webSocketManager: WebSocketManager? = null
+    private var sseClient: SseClient? = null
     private var sessionId: String = ""
     private var sessionName: String = "Session"
     private var currentLogFilter: LogFilter = LogFilter.ALL
@@ -76,6 +79,7 @@ class SessionDetailActivity : AppCompatActivity() {
                     }
                 }
             }
+            sseClient = SseClient(app.prefsManager)
         }
 
         setSupportActionBar(binding.toolbar)
@@ -123,11 +127,22 @@ class SessionDetailActivity : AppCompatActivity() {
                 }
             }
         }
+        sseClient?.let { sse ->
+            sse.connect(sessionId)
+            lifecycleScope.launch {
+                sse.eventStream.collect { event ->
+                    if (SseStreamHelper.isLifecycleRelevant(event)) {
+                        loadSessionData(showToast = false)
+                    }
+                }
+            }
+        }
     }
 
     override fun onStop() {
         super.onStop()
         webSocketManager?.disconnect()
+        sseClient?.disconnect()
         binding.liveStatusBanner.visibility = View.GONE
     }
 
